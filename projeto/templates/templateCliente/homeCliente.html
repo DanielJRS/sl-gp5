@@ -1,0 +1,450 @@
+{% load static %}
+
+<style>
+    :root {
+        --primary-green: #2d5f4f;
+        --light-green: #3a7561;
+        --hover-green: #4a8a75;
+        --bg-light: #f8f9fa;
+        --border-color: #dee2e6;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-header h2 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.8rem;
+    }
+
+    .page-header .subtitle {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary-custom {
+        background-color: rgba(255, 255, 255, 0.15);
+        border: 2px solid white;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        color: white;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary-custom:hover {
+        background-color: white;
+        color: var(--primary-green);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-voltar {
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        color: white;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+    .btn-voltar:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-color: white;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Grid de Cards */
+    .clients-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        align-items: start;
+    }
+
+    /* Card do Cliente */
+    .client-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .client-card:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .client-card.expanded {
+        grid-column: span 2;
+    }
+
+    .client-card-header {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+        padding: 1.2rem;
+        color: white;
+    }
+
+    .client-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .client-cpf {
+        font-size: 0.85rem;
+        opacity: 0.9;
+        margin: 0.3rem 0 0 0;
+    }
+
+    .client-card-body {
+        padding: 1.2rem;
+    }
+
+    .client-info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 0.8rem;
+        font-size: 0.9rem;
+        color: #495057;
+    }
+
+    .client-info-item i {
+        color: var(--primary-green);
+        width: 18px;
+        text-align: center;
+    }
+
+    .client-info-item span {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Detalhes Expandidos */
+    .client-details {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease;
+        background-color: var(--bg-light);
+        padding: 0 1.2rem;
+    }
+
+    .client-card.expanded .client-details {
+        max-height: 600px;
+        padding: 1.2rem;
+    }
+
+    .detail-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .detail-item {
+        margin-bottom: 0.8rem;
+    }
+
+    .detail-label {
+        color: #6c757d;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.3rem;
+        font-weight: 600;
+    }
+
+    .detail-value {
+        color: #212529;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .address-full {
+        grid-column: 1 / -1;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+    }
+
+    .client-card-footer {
+        padding: 1rem 1.2rem;
+        background-color: var(--bg-light);
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+    }
+
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        border: none;
+        transition: all 0.2s ease;
+        font-size: 0.85rem;
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        text-decoration: none;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .btn-details {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .btn-details:hover {
+        background-color: #138496;
+        color: white;
+    }
+
+    .client-card.expanded .btn-details {
+        background-color: #6c757d;
+    }
+
+    .client-card.expanded .btn-details i {
+        transform: rotate(180deg);
+        transition: transform 0.3s ease;
+    }
+
+    .btn-details i {
+        transition: transform 0.3s ease;
+    }
+
+    .btn-edit {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .btn-edit:hover {
+        background-color: #e0a800;
+        color: #212529;
+    }
+
+    .btn-delete {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background-color: #c82333;
+        color: white;
+    }
+
+    .alert-custom {
+        border: none;
+        border-radius: 12px;
+        padding: 1.5rem;
+        background-color: #d1ecf1;
+        color: #0c5460;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .alert-custom i {
+        font-size: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            text-align: center;
+        }
+
+        .page-header .btn-primary-custom,
+        .page-header .btn-voltar {
+            margin-top: 0.5rem;
+        }
+
+        .clients-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .client-card.expanded {
+            grid-column: span 1;
+        }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+        .client-card.expanded {
+            grid-column: span 3;
+        }
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2>Clientes Cadastrados</h2>
+                <p class="subtitle">Total: {{ total_clientes }} cliente(s)</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'sistemaVendas:cliente_adicionar' %}" class="btn-primary-custom me-2">
+                    <i class="fas fa-plus"></i> Novo Cliente
+                </a>
+                <a href="{% url 'sistemaVendas:home' %}" class="btn-voltar">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if clientes %}
+    <div class="clients-grid">
+        {% for cliente in clientes %}
+        <div class="client-card" id="card-{{ cliente.id }}">
+            <div class="client-card-header">
+                <h3 class="client-name">{{ cliente.nome }}</h3>
+                <p class="client-cpf">CPF: {{ cliente.cpf }}</p>
+            </div>
+            
+            <div class="client-card-body">
+                <div class="client-info-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>{{ cliente.email|default:"Não informado" }}</span>
+                </div>
+                
+                <div class="client-info-item">
+                    <i class="fas fa-phone"></i>
+                    <span>{{ cliente.celular|default:"Não informado" }}</span>
+                </div>
+                
+                <div class="client-info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>
+                        {% if cliente.cidade and cliente.uf %}
+                            {{ cliente.cidade }}/{{ cliente.uf }}
+                        {% else %}
+                            Não informado
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Detalhes Expandidos -->
+            <div class="client-details">
+                <div class="detail-row">
+                    <div class="detail-item">
+                        <div class="detail-label">RG</div>
+                        <div class="detail-value">{{ cliente.rg|default:"Não informado" }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Telefone Fixo</div>
+                        <div class="detail-value">{{ cliente.telefone|default:"Não informado" }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">CEP</div>
+                        <div class="detail-value">{{ cliente.cep|default:"Não informado" }}</div>
+                    </div>
+                </div>
+
+                <div class="address-full">
+                    <div class="detail-label">Endereço Completo</div>
+                    <div class="detail-value">
+                        {% if cliente.endereco %}
+                            {{ cliente.endereco }}
+                            {% if cliente.numero %}, Nº {{ cliente.numero }}{% endif %}
+                            {% if cliente.complemento %} - {{ cliente.complemento }}{% endif %}
+                            <br>
+                            {% if cliente.bairro %}Bairro: {{ cliente.bairro }}<br>{% endif %}
+                            {% if cliente.cidade %}{{ cliente.cidade }}{% endif %}
+                            {% if cliente.uf %}/{{ cliente.uf }}{% endif %}
+                            {% if cliente.cep %} - CEP: {{ cliente.cep }}{% endif %}
+                        {% else %}
+                            Endereço não informado
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="client-card-footer">
+                <button type="button" 
+                        class="action-btn btn-details" 
+                        onclick="toggleDetails('card-{{ cliente.id }}')">
+                    <i class="fas fa-chevron-down"></i> <span class="btn-text">Detalhes</span>
+                </button>
+                
+                <a href="{% url 'sistemaVendas:cliente_editar' cliente.id %}" 
+                   class="action-btn btn-edit">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+                
+                <a href="{% url 'sistemaVendas:cliente_deletar' cliente.id %}" 
+                   class="action-btn btn-delete"
+                   onclick="return confirm('Tem certeza que deseja excluir {{ cliente.nome }}?')">
+                    <i class="fas fa-trash"></i> Excluir
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-custom">
+        <i class="fas fa-info-circle"></i> 
+        <div>
+            Nenhum cliente cadastrado ainda.
+            <a href="{% url 'sistemaVendas:cliente_adicionar' %}" class="alert-link fw-bold">
+                Clique aqui para adicionar o primeiro cliente
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleDetails(cardId) {
+    const card = document.getElementById(cardId);
+    const btn = card.querySelector('.btn-details');
+    const btnText = btn.querySelector('.btn-text');
+    
+    // Fecha todos os outros cards
+    document.querySelectorAll('.client-card.expanded').forEach(otherCard => {
+        if (otherCard.id !== cardId) {
+            otherCard.classList.remove('expanded');
+            const otherBtn = otherCard.querySelector('.btn-details .btn-text');
+            if (otherBtn) otherBtn.textContent = 'Detalhes';
+        }
+    });
+    
+    // Toggle do card atual
+    card.classList.toggle('expanded');
+    
+    if (card.classList.contains('expanded')) {
+        btnText.textContent = 'Fechar';
+    } else {
+        btnText.textContent = 'Detalhes';
+    }
+}
+</script>
