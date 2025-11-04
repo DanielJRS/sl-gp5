@@ -1,450 +1,527 @@
 {% load static %}
 
 <style>
-    :root {
-        --primary-green: #2d5f4f;
-        --light-green: #3a7561;
-        --hover-green: #4a8a75;
-        --bg-light: #f8f9fa;
-        --border-color: #dee2e6;
+    .home-cliente,
+    .home-cliente * {
+        box-sizing: border-box;
     }
 
-    .page-header {
-        background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
-        color: white;
-        padding: 2rem;
+    .home-cliente {
+        background: #f8f9fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 30px 35px;
+        color: #212529;
+        max-width: 1200px;
+        margin: 0 auto;   
+    }
+
+    .home-cliente .header-card {
+        background: #ffffff;
         border-radius: 12px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .page-header h2 {
-        margin: 0;
-        font-weight: 600;
-        font-size: 1.8rem;
-    }
-
-    .page-header .subtitle {
-        margin: 0.5rem 0 0 0;
-        opacity: 0.9;
-        font-size: 0.95rem;
-    }
-
-    .btn-primary-custom {
-        background-color: rgba(255, 255, 255, 0.15);
-        border: 2px solid white;
-        padding: 0.6rem 1.5rem;
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        color: white;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .btn-primary-custom:hover {
-        background-color: white;
-        color: var(--primary-green);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-    }
-
-    .btn-voltar {
-        background-color: rgba(255, 255, 255, 0.1);
-        border: 2px solid rgba(255, 255, 255, 0.5);
-        color: white;
-        padding: 0.6rem 1.5rem;
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        cursor: pointer;
-    }
-
-    .btn-voltar:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-        border-color: white;
-        color: white;
-        transform: translateY(-2px);
-    }
-
-    /* Grid de Cards */
-    .clients-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-        align-items: start;
-    }
-
-    /* Card do Cliente */
-    .client-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        overflow: hidden;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .client-card:hover {
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-    }
-
-    .client-card.expanded {
-        grid-column: span 2;
-    }
-
-    .client-card-header {
-        background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
-        padding: 1.2rem;
-        color: white;
-    }
-
-    .client-name {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .client-cpf {
-        font-size: 0.85rem;
-        opacity: 0.9;
-        margin: 0.3rem 0 0 0;
-    }
-
-    .client-card-body {
-        padding: 1.2rem;
-    }
-
-    .client-info-item {
+        border: 1px solid #f0f0f0;
+        padding: 24px 28px;
         display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        justify-content: space-between;
+        align-items: flex-start;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .home-cliente .header-text h2 {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 600;
+        color: #092e20;
+    }
+
+    .home-cliente .header-text p {
+        margin: 8px 0 0;
+        font-size: 14px;
+        color: #666666;
+    }
+
+    .home-cliente .header-meta {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .home-cliente .meta-pill {
+        background: rgba(68, 183, 139, 0.16);
+        color: #0c4b33;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+    }
+
+    .home-cliente .header-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .home-cliente .btn {
+        display: inline-flex;
         align-items: center;
-        gap: 0.6rem;
-        margin-bottom: 0.8rem;
-        font-size: 0.9rem;
+        gap: 10px;
+        padding: 10px 18px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid transparent;
+        background: #ffffff;
+        color: #495057;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .home-cliente .btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .home-cliente .btn-primary {
+        background: #44b78b;
+        color: #ffffff;
+        border: none;
+    }
+
+    .home-cliente .btn-primary:hover {
+        background: #369670;
+    }
+
+    .home-cliente .btn-secondary {
+        border: 1px solid #dfe0e1;
         color: #495057;
     }
 
-    .client-info-item i {
-        color: var(--primary-green);
-        width: 18px;
-        text-align: center;
+    .home-cliente .btn-secondary:hover {
+        background: #f1f3f5;
     }
 
-    .client-info-item span {
+    .home-cliente .btn-outline {
+        border: 1px solid rgba(12, 75, 51, 0.35);
+        color: #0c4b33;
+    }
+
+    .home-cliente .btn-outline:hover {
+        background: rgba(68, 183, 139, 0.12);
+        border-color: rgba(12, 75, 51, 0.5);
+    }
+
+    .home-cliente .btn-danger {
+        background: #dc3545;
+        color: #ffffff;
+        border: none;
+    }
+
+    .home-cliente .btn-danger:hover {
+        background: #c82333;
+    }
+
+    .home-cliente .clients-wrapper {
+        margin-top: 28px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 20px;
+    }
+
+    .home-cliente .client-card {
+        background: #ffffff;
+        border-radius: 10px;
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .home-cliente .client-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .home-cliente .client-card.expanded {
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    .home-cliente .client-card-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        justify-content: space-between;
+        padding: 20px 22px;
+        background: linear-gradient(180deg, #0c4b33 0%, #092e20 100%);
+        color: #ffffff;
+    }
+
+    .home-cliente .client-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .home-cliente .client-avatar svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .home-cliente .client-heading {
         flex: 1;
+        min-width: 0;
+    }
+
+    .home-cliente .client-heading h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    /* Detalhes Expandidos */
-    .client-details {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.4s ease;
-        background-color: var(--bg-light);
-        padding: 0 1.2rem;
+    .home-cliente .client-heading p {
+        margin: 6px 0 0;
+        font-size: 13px;
+        opacity: 0.85;
     }
 
-    .client-card.expanded .client-details {
-        max-height: 600px;
-        padding: 1.2rem;
+    .home-cliente .status-pill {
+        background: rgba(255, 255, 255, 0.16);
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
     }
 
-    .detail-row {
+    .home-cliente .client-card-body {
+        padding: 20px 22px;
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1rem;
+        gap: 12px;
+        background: #ffffff;
     }
 
-    .detail-item {
-        margin-bottom: 0.8rem;
+    .home-cliente .summary-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
     }
 
-    .detail-label {
-        color: #6c757d;
-        font-size: 0.8rem;
+    .home-cliente .summary-item .label {
+        font-size: 12px;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.3rem;
+        letter-spacing: 0.4px;
+        color: #6c757d;
         font-weight: 600;
     }
 
-    .detail-value {
+    .home-cliente .summary-item .value {
+        font-size: 15px;
         color: #212529;
         font-weight: 500;
-        font-size: 0.95rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
-    .address-full {
-        grid-column: 1 / -1;
-        padding: 1rem;
-        background: white;
-        border-radius: 8px;
-        margin-top: 0.5rem;
+    .home-cliente .client-details {
+        background: #f8f9fa;
+        border-top: 1px solid #f0f0f0;
+        padding: 0 22px;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s ease, padding 0.3s ease;
     }
 
-    .client-card-footer {
-        padding: 1rem 1.2rem;
-        background-color: var(--bg-light);
+    .home-cliente .client-card.expanded .client-details {
+        max-height: 420px;
+        padding: 20px 22px 22px;
+    }
+
+    .home-cliente .detail-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .home-cliente .detail-item {
         display: flex;
-        gap: 0.5rem;
-        justify-content: space-between;
+        flex-direction: column;
+        gap: 4px;
     }
 
-    .action-btn {
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        border: none;
-        transition: all 0.2s ease;
-        font-size: 0.85rem;
-        flex: 1;
-        display: inline-flex;
-        align-items: center;
+    .home-cliente .detail-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .home-cliente .detail-value {
+        font-size: 15px;
+        color: #212529;
+        line-height: 1.45;
+    }
+
+    .home-cliente .client-card-footer {
+        padding: 16px 22px 20px;
+        background: #ffffff;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .home-cliente .btn-details {
+        flex: 1 1 120px;
         justify-content: center;
-        gap: 0.4rem;
-        text-decoration: none;
-        font-weight: 500;
-        cursor: pointer;
+        position: relative;
     }
 
-    .btn-details {
-        background-color: #17a2b8;
-        color: white;
-    }
-
-    .btn-details:hover {
-        background-color: #138496;
-        color: white;
-    }
-
-    .client-card.expanded .btn-details {
-        background-color: #6c757d;
-    }
-
-    .client-card.expanded .btn-details i {
-        transform: rotate(180deg);
+    .home-cliente .btn-details .chevron {
+        width: 10px;
+        height: 10px;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: rotate(45deg);
         transition: transform 0.3s ease;
+        margin-right: 6px;
     }
 
-    .btn-details i {
-        transition: transform 0.3s ease;
+    .home-cliente .client-card.expanded .btn-details .chevron {
+        transform: rotate(-135deg);
     }
 
-    .btn-edit {
-        background-color: #ffc107;
-        color: #212529;
+    .home-cliente .client-card-footer .btn-secondary,
+    .home-cliente .client-card-footer .btn-danger {
+        flex: 1 1 130px;
+        justify-content: center;
     }
 
-    .btn-edit:hover {
-        background-color: #e0a800;
-        color: #212529;
+    .home-cliente .empty-state {
+        margin-top: 30px;
+        text-align: center;
+        background: #ffffff;
+        border: 1px solid #f0f0f0;
+        border-radius: 10px;
+        padding: 44px 40px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
 
-    .btn-delete {
-        background-color: #dc3545;
-        color: white;
+    .home-cliente .empty-state h3 {
+        margin: 0 0 12px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #092e20;
     }
 
-    .btn-delete:hover {
-        background-color: #c82333;
-        color: white;
-    }
-
-    .alert-custom {
-        border: none;
-        border-radius: 12px;
-        padding: 1.5rem;
-        background-color: #d1ecf1;
-        color: #0c5460;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .alert-custom i {
-        font-size: 1.5rem;
+    .home-cliente .empty-state p {
+        margin: 0 0 24px;
+        color: #666666;
+        font-size: 14px;
     }
 
     @media (max-width: 768px) {
-        .page-header {
-            text-align: center;
+        .home-cliente {
+            padding: 24px 18px;
         }
 
-        .page-header .btn-primary-custom,
-        .page-header .btn-voltar {
-            margin-top: 0.5rem;
+        .home-cliente .client-card-header {
+            flex-direction: column;
+            align-items: flex-start;
         }
 
-        .clients-grid {
-            grid-template-columns: 1fr;
+        .home-cliente .client-card-footer {
+            flex-direction: column;
         }
 
-        .client-card.expanded {
-            grid-column: span 1;
+        .home-cliente .client-card-footer .btn {
+            width: 100%;
         }
-    }
 
-    @media (min-width: 769px) and (max-width: 1024px) {
-        .client-card.expanded {
-            grid-column: span 3;
+        .home-cliente .status-pill {
+            align-self: flex-start;
         }
     }
 </style>
 
-<div class="container mt-4">
-    <div class="page-header">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h2>Clientes Cadastrados</h2>
-                <p class="subtitle">Total: {{ total_clientes }} cliente(s)</p>
-            </div>
-            <div class="col-md-4 text-end">
-                <a href="{% url 'sistemaVendas:cliente_adicionar' %}" class="btn-primary-custom me-2">
-                    <i class="fas fa-plus"></i> Novo Cliente
-                </a>
-                <a href="{% url 'sistemaVendas:home' %}" class="btn-voltar">
-                    <i class="fas fa-arrow-left"></i> Voltar
-                </a>
+<div class="home-cliente">
+    <section class="header-card">
+        <div class="header-text">
+            <h2>Clientes Cadastrados</h2>
+            <p>Gerencie os clientes, visualize rapidamente contatos e abra detalhes completos quando necessário.</p>
+            <div class="header-meta">
+                <span class="meta-pill">{{ total_clientes }} cliente{% if total_clientes|default:0 != 1 %}s{% endif %}</span>
             </div>
         </div>
-    </div>
+        <div class="header-actions">
+            <a href="{% url 'sistemaVendas:cliente_adicionar' %}" class="btn btn-primary">
+                <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                </svg>
+                Novo Cliente
+            </a>
+            <a href="{% url 'sistemaVendas:home' %}" class="btn btn-secondary">
+                <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                Voltar
+            </a>
+        </div>
+    </section>
 
     {% if clientes %}
-    <div class="clients-grid">
+    <div class="clients-wrapper">
         {% for cliente in clientes %}
-        <div class="client-card" id="card-{{ cliente.id }}">
-            <div class="client-card-header">
-                <h3 class="client-name">{{ cliente.nome }}</h3>
-                <p class="client-cpf">CPF: {{ cliente.cpf }}</p>
-            </div>
-            
+        <article class="client-card" id="cliente-card-{{ cliente.id }}">
+            <header class="client-card-header">
+                <div class="client-avatar" aria-hidden="true">
+                    <svg fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 10a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 1114 0H3z"/>
+                    </svg>
+                </div>
+                <div class="client-heading">
+                    <h3 title="{{ cliente.nome }}">{{ cliente.nome }}</h3>
+                    <p>CPF: {{ cliente.cpf|default:"Não informado" }}</p>
+                </div>
+                <span class="status-pill">
+                    {% if cliente.cidade and cliente.uf %}
+                        {{ cliente.cidade }}/{{ cliente.uf }}
+                    {% else %}
+                        Localização não informada
+                    {% endif %}
+                </span>
+            </header>
+
             <div class="client-card-body">
-                <div class="client-info-item">
-                    <i class="fas fa-envelope"></i>
-                    <span>{{ cliente.email|default:"Não informado" }}</span>
+                <div class="summary-item">
+                    <span class="label">E-mail</span>
+                    <span class="value">{{ cliente.email|default:"Não informado" }}</span>
                 </div>
-                
-                <div class="client-info-item">
-                    <i class="fas fa-phone"></i>
-                    <span>{{ cliente.celular|default:"Não informado" }}</span>
+                <div class="summary-item">
+                    <span class="label">Celular</span>
+                    <span class="value">{{ cliente.celular|default:"Não informado" }}</span>
                 </div>
-                
-                <div class="client-info-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span>
-                        {% if cliente.cidade and cliente.uf %}
-                            {{ cliente.cidade }}/{{ cliente.uf }}
-                        {% else %}
-                            Não informado
-                        {% endif %}
-                    </span>
+                <div class="summary-item">
+                    <span class="label">Telefone Fixo</span>
+                    <span class="value">{{ cliente.telefone|default:"Não informado" }}</span>
                 </div>
             </div>
 
-            <!-- Detalhes Expandidos -->
             <div class="client-details">
-                <div class="detail-row">
+                <div class="detail-grid">
                     <div class="detail-item">
-                        <div class="detail-label">RG</div>
-                        <div class="detail-value">{{ cliente.rg|default:"Não informado" }}</div>
+                        <span class="detail-label">RG</span>
+                        <span class="detail-value">{{ cliente.rg|default:"Não informado" }}</span>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-label">Telefone Fixo</div>
-                        <div class="detail-value">{{ cliente.telefone|default:"Não informado" }}</div>
+                        <span class="detail-label">CEP</span>
+                        <span class="detail-value">{{ cliente.cep|default:"Não informado" }}</span>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-label">CEP</div>
-                        <div class="detail-value">{{ cliente.cep|default:"Não informado" }}</div>
+                        <span class="detail-label">Endereço Completo</span>
+                        <span class="detail-value">
+                            {% if cliente.endereco %}
+                                {{ cliente.endereco }}{% if cliente.numero %}, Nº {{ cliente.numero }}{% endif %}{% if cliente.complemento %} - {{ cliente.complemento }}{% endif %}<br>
+                                {% if cliente.bairro %}Bairro: {{ cliente.bairro }}{% endif %}
+                                {% if cliente.bairro %}{% if cliente.cidade or cliente.uf %} • {% endif %}{% endif %}
+                                {% if cliente.cidade %}{{ cliente.cidade }}{% endif %}{% if cliente.uf %}/{{ cliente.uf }}{% endif %}
+                                {% if cliente.cep %} • CEP: {{ cliente.cep }}{% endif %}
+                            {% else %}
+                                Endereço não informado
+                            {% endif %}
+                        </span>
                     </div>
                 </div>
+            </div>
 
-                <div class="address-full">
-                    <div class="detail-label">Endereço Completo</div>
-                    <div class="detail-value">
-                        {% if cliente.endereco %}
-                            {{ cliente.endereco }}
-                            {% if cliente.numero %}, Nº {{ cliente.numero }}{% endif %}
-                            {% if cliente.complemento %} - {{ cliente.complemento }}{% endif %}
-                            <br>
-                            {% if cliente.bairro %}Bairro: {{ cliente.bairro }}<br>{% endif %}
-                            {% if cliente.cidade %}{{ cliente.cidade }}{% endif %}
-                            {% if cliente.uf %}/{{ cliente.uf }}{% endif %}
-                            {% if cliente.cep %} - CEP: {{ cliente.cep }}{% endif %}
-                        {% else %}
-                            Endereço não informado
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <div class="client-card-footer">
-                <button type="button" 
-                        class="action-btn btn-details" 
-                        onclick="toggleDetails('card-{{ cliente.id }}')">
-                    <i class="fas fa-chevron-down"></i> <span class="btn-text">Detalhes</span>
+            <footer class="client-card-footer">
+                <button type="button"
+                        class="btn btn-outline btn-details"
+                        onclick="toggleDetails('cliente-card-{{ cliente.id }}')"
+                        aria-expanded="false">
+                    <span class="chevron"></span>
+                    <span class="btn-text">Detalhes</span>
                 </button>
-                
-                <a href="{% url 'sistemaVendas:cliente_editar' cliente.id %}" 
-                   class="action-btn btn-edit">
-                    <i class="fas fa-edit"></i> Editar
+                <a href="{% url 'sistemaVendas:cliente_editar' cliente.id %}" class="btn btn-secondary">
+                    <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M17.414 2.586a2 2 0 010 2.828l-9.9 9.9a1 1 0 01-.465.263l-3.4.85a.5.5 0 01-.606-.606l.85-3.4a1 1 0 01.263-.465l9.9-9.9a2 2 0 012.828 0zM15 4l-9.5 9.5-.35 1.4 1.4-.35L16 5.414 15 4z"/>
+                    </svg>
+                    Editar
                 </a>
-                
-                <a href="{% url 'sistemaVendas:cliente_deletar' cliente.id %}" 
-                   class="action-btn btn-delete"
+                <a href="{% url 'sistemaVendas:cliente_deletar' cliente.id %}"
+                   class="btn btn-danger"
                    onclick="return confirm('Tem certeza que deseja excluir {{ cliente.nome }}?')">
-                    <i class="fas fa-trash"></i> Excluir
+                    <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM8 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 10-2 0v6a1 1 0 102 0V8z" clip-rule="evenodd"/>
+                    </svg>
+                    Excluir
                 </a>
-            </div>
-        </div>
+            </footer>
+        </article>
         {% endfor %}
     </div>
     {% else %}
-    <div class="alert alert-custom">
-        <i class="fas fa-info-circle"></i> 
-        <div>
-            Nenhum cliente cadastrado ainda.
-            <a href="{% url 'sistemaVendas:cliente_adicionar' %}" class="alert-link fw-bold">
-                Clique aqui para adicionar o primeiro cliente
-            </a>
-        </div>
-    </div>
+    <section class="empty-state">
+        <h3>Nenhum cliente cadastrado</h3>
+        <p>Comece adicionando o primeiro cliente para visualizar os dados nesta área.</p>
+        <a href="{% url 'sistemaVendas:cliente_adicionar' %}" class="btn btn-primary">
+            <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+            </svg>
+            Adicionar cliente
+        </a>
+    </section>
     {% endif %}
 </div>
 
 <script>
 function toggleDetails(cardId) {
     const card = document.getElementById(cardId);
-    const btn = card.querySelector('.btn-details');
-    const btnText = btn.querySelector('.btn-text');
-    
-    // Fecha todos os outros cards
-    document.querySelectorAll('.client-card.expanded').forEach(otherCard => {
+    if (!card) {
+        return;
+    }
+
+    document.querySelectorAll('.home-cliente .client-card.expanded').forEach(otherCard => {
         if (otherCard.id !== cardId) {
             otherCard.classList.remove('expanded');
-            const otherBtn = otherCard.querySelector('.btn-details .btn-text');
-            if (otherBtn) otherBtn.textContent = 'Detalhes';
+            const otherButton = otherCard.querySelector('.btn-details');
+            if (otherButton) {
+                otherButton.setAttribute('aria-expanded', 'false');
+                const otherText = otherButton.querySelector('.btn-text');
+                if (otherText) {
+                    otherText.textContent = 'Detalhes';
+                }
+            }
         }
     });
-    
-    // Toggle do card atual
+
     card.classList.toggle('expanded');
-    
-    if (card.classList.contains('expanded')) {
-        btnText.textContent = 'Fechar';
-    } else {
-        btnText.textContent = 'Detalhes';
+
+    const button = card.querySelector('.btn-details');
+    const text = button ? button.querySelector('.btn-text') : null;
+    const isExpanded = card.classList.contains('expanded');
+
+    if (button) {
+        button.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+    }
+
+    if (text) {
+        text.textContent = isExpanded ? 'Fechar' : 'Detalhes';
     }
 }
 </script>
