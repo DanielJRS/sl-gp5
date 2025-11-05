@@ -6,6 +6,20 @@ from .forms import CustomLoginForm, ClienteForm, FuncionarioForm
 from django.http import HttpRequest
 from django import forms
 from .models import models,ClienteModel, funcionarioModel
+from .forms import FornecedorForm
+from .models import FornecedorModel
+from .forms import ProdutoForm
+from .models import ProdutoModel
+from django.db import models
+from .forms import VendaForm, ItemVendaForm, ItemVendaFormSet
+from .models import VendaModel, ItemVendaModel
+from django.db import transaction
+from django.contrib import messages
+from django.db.models import Sum, Count, Q, F
+from django.utils import timezone
+from datetime import timedelta
+from django.contrib.auth import logout as auth_logout
+from django.contrib import messages
 
 def loginForm(request):
     next_url = request.POST.get('next') or request.GET.get('next') or ''
@@ -116,15 +130,319 @@ def funcionario_deletar(request, funcionario_id):
     funcionario.delete()
     return redirect('sistemaVendas:funcionario_home')
 
-# def cliente_add(request):
-#     if request.method == 'POST':
-#         formulario = ClienteForm(request.POST)
-#         if formulario.is_valid():
-#             formulario.save()
-#             return redirect('sistemaVendas:cliente_home')
-#     else:
-#         formulario = ClienteForm()
+
+@login_required
+def fornecedor_home(request):
+    fornecedores = FornecedorModel.objects.all().order_by('razao_social')
+    contexto = {
+        'fornecedores': fornecedores,  
+        'total_fornecedores': fornecedores.count()
+    }
+    return render(request, 'templateFornecedor/homeFornecedor.html', contexto)
+
+
+@login_required
+def fornecedor_add(request):
+    if request.method == 'POST':
+        formulario = FornecedorForm(request.POST)
+        if formulario.is_valid():
+            formulario.save()
+            return redirect('sistemaVendas:fornecedor_home')
+    else:
+        formulario = FornecedorForm()
     
-#     contexto = {'form': formulario}
-#     return render(request, 'templateCliente/Adicionarcliente.html', contexto)
+    contexto = {'form': formulario}
+    return render(request, 'templateFornecedor/AdicionarFornecedor.html', contexto)
+
+
+@login_required
+def fornecedor_editar(request, fornecedor_id):
+    """Página para editar um fornecedor existente"""
+    fornecedor = get_object_or_404(FornecedorModel, id=fornecedor_id)
+    if request.method == 'POST':
+        formulario = FornecedorForm(request.POST, instance=fornecedor)
+        if formulario.is_valid():
+            formulario.save()
+            return redirect('sistemaVendas:fornecedor_home')
+    else:
+        formulario = FornecedorForm(instance=fornecedor)
+    
+    contexto = {'form': formulario, 'fornecedor': fornecedor}
+    return render(request, 'templateFornecedor/AdicionarFornecedor.html', contexto)
+
+
+@login_required
+def fornecedor_deletar(request, fornecedor_id):
+    fornecedor = get_object_or_404(FornecedorModel, id=fornecedor_id)
+    fornecedor.delete()
+    return redirect('sistemaVendas:fornecedor_home')
+
+
+@login_required
+def produto_home(request):
+    produtos = ProdutoModel.objects.all().order_by('nome')
+    categoria = request.GET.get('categoria')
+    estoque_baixo = request.GET.get('estoque_baixo')
+    
+    if categoria:
+        produtos = produtos.filter(categoria=categoria)
+    
+    if estoque_baixo:
+        produtos = produtos.filter(estoque_atual__lte=models.F('estoque_minimo'))
+    
+    contexto = {
+        'produtos': produtos,
+        'total_produtos': produtos.count(),
+        'categorias': ProdutoModel.CATEGORIA_CHOICES,
+    }
+    return render(request, 'templateProduto/homeProduto.html', contexto)
+
+
+@login_required
+def produto_add(request):
+    if request.method == 'POST':
+        formulario = ProdutoForm(request.POST)
+        if formulario.is_valid():
+            formulario.save()
+            return redirect('sistemaVendas:produto_home')
+    else:
+        formulario = ProdutoForm()
+    
+    contexto = {'form': formulario}
+    return render(request, 'templateProduto/AdicionarProduto.html', contexto)
+
+
+@login_required
+def produto_editar(request, produto_id):
+    """Página para editar um produto existente"""
+    produto = get_object_or_404(ProdutoModel, id=produto_id)
+    if request.method == 'POST':
+        formulario = ProdutoForm(request.POST, instance=produto)
+        if formulario.is_valid():
+            formulario.save()
+            return redirect('sistemaVendas:produto_home')
+    else:
+        formulario = ProdutoForm(instance=produto)
+    
+    contexto = {'form': formulario, 'produto': produto}
+    return render(request, 'templateProduto/AdicionarProduto.html', contexto)
+
+
+@login_required
+def produto_deletar(request, produto_id):
+    produto = get_object_or_404(ProdutoModel, id=produto_id)
+    produto.delete()
+    return redirect('sistemaVendas:produto_home')
+
+
+@login_required
+def produto_detalhes(request, produto_id):
+    """Página para visualizar detalhes completos do produto"""
+    produto = get_object_or_404(ProdutoModel, id=produto_id)
+    contexto = {'produto': produto}
+    return render(request, 'templateProduto/detalhesProduto.html', contexto)
+
+
+@login_required
+def venda_home(request):
+    hoje = timezone.now()
+    inicio_mes = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
+    
+    total_clientes = ClienteModel.objects.count()
+    clientes_mes_atual = ClienteModel.objects.filter(id__gte=0).count()
+    
+    total_produtos = ProdutoModel.objects.count()
+    produtos_ativos = ProdutoModel.objects.filter(ativo=True).count()
+    produtos_estoque_baixo = ProdutoModel.objects.filter(
+        estoque_atual__lte=models.F('estoque_minimo')
+    ).count()
+    
+    vendas_mes = VendaModel.objects.filter(
+        data_venda__gte=inicio_mes,
+        status__in=['CONFIRMADA', 'FINALIZADA']
+    )
+    total_vendas_mes = vendas_mes.aggregate(total=Sum('valor_total'))['total'] or 0
+    qtd_vendas_mes = vendas_mes.count()
+    
+    vendas_mes_anterior = VendaModel.objects.filter(
+        data_venda__gte=mes_anterior,
+        data_venda__lt=inicio_mes,
+        status__in=['CONFIRMADA', 'FINALIZADA']
+    )
+    total_vendas_mes_anterior = vendas_mes_anterior.aggregate(total=Sum('valor_total'))['total'] or 0
+    
+    if total_vendas_mes_anterior > 0:
+        variacao_vendas = ((total_vendas_mes - total_vendas_mes_anterior) / total_vendas_mes_anterior) * 100
+    else:
+        variacao_vendas = 100 if total_vendas_mes > 0 else 0
+    
+    total_fornecedores = FornecedorModel.objects.count()
+    fornecedores_com_produtos = FornecedorModel.objects.filter(
+        produtos__isnull=False
+    ).distinct().count()
+    
+    ultimas_vendas = VendaModel.objects.select_related(
+        'cliente', 'funcionario'
+    ).order_by('-data_venda')[:5]
+    
+    produtos_recentes = ProdutoModel.objects.select_related(
+        'fornecedor'
+    ).order_by('-data_cadastro')[:5]
+    
+    produtos_alerta = ProdutoModel.objects.filter(
+        estoque_atual__lte=models.F('estoque_minimo'),
+        ativo=True
+    ).order_by('estoque_atual')[:5]
+    
+    contexto = {
+        'total_clientes': total_clientes,
+        'total_produtos': total_produtos,
+        'produtos_ativos': produtos_ativos,
+        'produtos_estoque_baixo': produtos_estoque_baixo,
+        'total_vendas_mes': total_vendas_mes,
+        'qtd_vendas_mes': qtd_vendas_mes,
+        'variacao_vendas': variacao_vendas,
+        'total_fornecedores': total_fornecedores,
+        'fornecedores_com_produtos': fornecedores_com_produtos,
+        'ultimas_vendas': ultimas_vendas,
+        'produtos_recentes': produtos_recentes,
+        'produtos_alerta': produtos_alerta,
+    }
+    
+    return render(request, 'home.html', contexto)
+
+
+@login_required
+@transaction.atomic
+def venda_add(request):
+    if request.method == 'POST':
+        form = VendaForm(request.POST)
+        formset = ItemVendaFormSet(request.POST)
+        
+        if form.is_valid() and formset.is_valid():
+            venda = form.save()
+            formset.instance = venda
+            formset.save()
+            
+            for item in venda.itens.all():
+                produto = item.produto
+                produto.estoque_atual -= item.quantidade
+                produto.save()
+            
+            messages.success(request, f'Venda {venda.numero_venda} criada com sucesso!')
+            return redirect('sistemaVendas:venda_detalhes', venda_id=venda.id)
+    else:
+        form = VendaForm()
+        formset = ItemVendaFormSet()
+    
+    contexto = {
+        'form': form,
+        'formset': formset,
+    }
+    return render(request, 'templateVenda/AdicionarVenda.html', contexto)
+
+
+@login_required
+def venda_detalhes(request, venda_id):
+    """Página para visualizar detalhes completos da venda"""
+    venda = get_object_or_404(VendaModel, id=venda_id)
+    itens = venda.itens.all()
+    
+    contexto = {
+        'venda': venda,
+        'itens': itens,
+    }
+    return render(request, 'templateVenda/detalhesVenda.html', contexto)
+
+
+@login_required
+@transaction.atomic
+def venda_editar(request, venda_id):
+    """Página para editar uma venda existente"""
+    venda = get_object_or_404(VendaModel, id=venda_id)
+    
+    if venda.status in ['CANCELADA', 'FINALIZADA']:
+        messages.error(request, 'Não é possível editar uma venda cancelada ou finalizada.')
+        return redirect('sistemaVendas:venda_detalhes', venda_id=venda.id)
+    
+    for item in venda.itens.all():
+        produto = item.produto
+        produto.estoque_atual += item.quantidade
+        produto.save()
+    
+    if request.method == 'POST':
+        form = VendaForm(request.POST, instance=venda)
+        formset = ItemVendaFormSet(request.POST, instance=venda)
+        
+        if form.is_valid() and formset.is_valid():
+            venda = form.save()
+            formset.save()
+            
+            for item in venda.itens.all():
+                produto = item.produto
+                produto.estoque_atual -= item.quantidade
+                produto.save()
+            
+            messages.success(request, f'Venda {venda.numero_venda} atualizada com sucesso!')
+            return redirect('sistemaVendas:venda_detalhes', venda_id=venda.id)
+    else:
+        form = VendaForm(instance=venda)
+        formset = ItemVendaFormSet(instance=venda)
+    
+    contexto = {
+        'form': form,
+        'formset': formset,
+        'venda': venda,
+    }
+    return render(request, 'templateVenda/AdicionarVenda.html', contexto)
+
+
+@login_required
+@transaction.atomic
+def venda_cancelar(request, venda_id):
+    """Cancela uma venda e devolve produtos ao estoque"""
+    venda = get_object_or_404(VendaModel, id=venda_id)
+    
+    if not venda.pode_cancelar():
+        messages.error(request, 'Esta venda não pode ser cancelada.')
+        return redirect('sistemaVendas:venda_detalhes', venda_id=venda.id)
+    
+    if request.method == 'POST':
+        for item in venda.itens.all():
+            produto = item.produto
+            produto.estoque_atual += item.quantidade
+            produto.save()
+        
+        venda.status = 'CANCELADA'
+        venda.save()
+        
+        messages.success(request, f'Venda {venda.numero_venda} cancelada com sucesso!')
+        return redirect('sistemaVendas:venda_home')
+    
+    contexto = {'venda': venda}
+    return render(request, 'templateVenda/cancelarVenda.html', contexto)
+
+
+@login_required
+def venda_deletar(request, venda_id):
+    """Deleta uma venda (apenas orçamentos)"""
+    venda = get_object_or_404(VendaModel, id=venda_id)
+    
+    if venda.status != 'ORCAMENTO':
+        messages.error(request, 'Apenas orçamentos podem ser deletados. Use o cancelamento para outras vendas.')
+        return redirect('sistemaVendas:venda_detalhes', venda_id=venda.id)
+    
+    venda.delete()
+    messages.success(request, 'Orçamento deletado com sucesso!')
+    return redirect('sistemaVendas:venda_home')
+
+
+@login_required
+def logout_view(request):
+    if request.method == 'POST':
+        auth_logout(request)
+        messages.success(request, 'Você saiu do sistema com sucesso!')
+        return redirect('sistemaVendas:loginForm')
+    return render(request, 'logout_confirm.html')
 
