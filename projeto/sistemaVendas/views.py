@@ -36,9 +36,77 @@ def loginForm(request):
         form = CustomLoginForm()
     return render(request, 'login.html', {'form': form, 'next': next_url})
 
+def _montar_contexto_dashboard():
+    """Monta os dados exibidos no painel principal/home."""
+    hoje = timezone.now()
+    inicio_mes = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
+
+    total_clientes = ClienteModel.objects.count()
+
+    total_produtos = ProdutoModel.objects.count()
+    produtos_ativos = ProdutoModel.objects.filter(ativo=True).count()
+    produtos_estoque_baixo = ProdutoModel.objects.filter(
+        estoque_atual__lte=models.F('estoque_minimo')
+    ).count()
+
+    vendas_mes = VendaModel.objects.filter(
+        data_venda__gte=inicio_mes,
+        status__in=['CONFIRMADA', 'FINALIZADA']
+    )
+    total_vendas_mes = vendas_mes.aggregate(total=Sum('valor_total'))['total'] or 0
+    qtd_vendas_mes = vendas_mes.count()
+
+    vendas_mes_anterior = VendaModel.objects.filter(
+        data_venda__gte=mes_anterior,
+        data_venda__lt=inicio_mes,
+        status__in=['CONFIRMADA', 'FINALIZADA']
+    )
+    total_vendas_mes_anterior = vendas_mes_anterior.aggregate(total=Sum('valor_total'))['total'] or 0
+
+    if total_vendas_mes_anterior > 0:
+        variacao_vendas = ((total_vendas_mes - total_vendas_mes_anterior) / total_vendas_mes_anterior) * 100
+    else:
+        variacao_vendas = 100 if total_vendas_mes > 0 else 0
+
+    total_fornecedores = FornecedorModel.objects.count()
+    fornecedores_com_produtos = FornecedorModel.objects.filter(
+        produtos__isnull=False
+    ).distinct().count()
+
+    ultimas_vendas = VendaModel.objects.select_related(
+        'cliente', 'funcionario'
+    ).order_by('-data_venda')[:5]
+
+    produtos_recentes = ProdutoModel.objects.select_related(
+        'fornecedor'
+    ).order_by('-data_cadastro')[:5]
+
+    produtos_alerta = ProdutoModel.objects.filter(
+        estoque_atual__lte=models.F('estoque_minimo'),
+        ativo=True
+    ).order_by('estoque_atual')[:5]
+
+    return {
+        'total_clientes': total_clientes,
+        'total_produtos': total_produtos,
+        'produtos_ativos': produtos_ativos,
+        'produtos_estoque_baixo': produtos_estoque_baixo,
+        'total_vendas_mes': total_vendas_mes,
+        'qtd_vendas_mes': qtd_vendas_mes,
+        'variacao_vendas': variacao_vendas,
+        'total_fornecedores': total_fornecedores,
+        'fornecedores_com_produtos': fornecedores_com_produtos,
+        'ultimas_vendas': ultimas_vendas,
+        'produtos_recentes': produtos_recentes,
+        'produtos_alerta': produtos_alerta,
+    }
+
+
 @login_required
 def home(request):
-    return render(request, 'home.html')
+    contexto = _montar_contexto_dashboard()
+    return render(request, 'home.html', contexto)
 
 
 @login_required
@@ -92,7 +160,7 @@ def funcionario_home(request):
         'funcionarios': funcionarios,  
         'total_funcionarios': funcionarios.count()
     }
-    return render(request, 'templatefuncionario/homefuncionario.html', contexto)
+    return render(request, 'templatesFuncionario/homeFuncionario.html', contexto)
 
 
 @login_required
@@ -106,7 +174,7 @@ def funcionario_add(request):
         formulario = FuncionarioForm()
     
     contexto = {'form': formulario}
-    return render(request, 'templatefuncionario/Adicionarfuncionario.html', contexto)
+    return render(request, 'templatesFuncionario/adicionarFuncionario.html', contexto)
 
 
 @login_required
@@ -122,7 +190,7 @@ def funcionario_editar(request, funcionario_id):
         formulario = FuncionarioForm(instance=funcionario)
     
     contexto = {'form': formulario, 'funcionario': funcionario}
-    return render(request, 'templatefuncionario/Adicionarfuncionario.html', contexto)
+    return render(request, 'templatesFuncionario/adicionarFuncionario.html', contexto)
 
 @login_required
 def funcionario_deletar(request, funcionario_id):
@@ -138,7 +206,7 @@ def fornecedor_home(request):
         'fornecedores': fornecedores,  
         'total_fornecedores': fornecedores.count()
     }
-    return render(request, 'templateFornecedor/homeFornecedor.html', contexto)
+    return render(request, 'templatesFornecedor/homeFornecedor.html', contexto)
 
 
 @login_required
@@ -152,7 +220,7 @@ def fornecedor_add(request):
         formulario = FornecedorForm()
     
     contexto = {'form': formulario}
-    return render(request, 'templateFornecedor/AdicionarFornecedor.html', contexto)
+    return render(request, 'templatesFornecedor/adicionarFornecedor.html', contexto)
 
 
 @login_required
@@ -168,7 +236,7 @@ def fornecedor_editar(request, fornecedor_id):
         formulario = FornecedorForm(instance=fornecedor)
     
     contexto = {'form': formulario, 'fornecedor': fornecedor}
-    return render(request, 'templateFornecedor/AdicionarFornecedor.html', contexto)
+    return render(request, 'templatesFornecedor/adicionarFornecedor.html', contexto)
 
 
 @login_required
@@ -194,8 +262,10 @@ def produto_home(request):
         'produtos': produtos,
         'total_produtos': produtos.count(),
         'categorias': ProdutoModel.CATEGORIA_CHOICES,
+        'categoria_selecionada': categoria,
+        'estoque_baixo': estoque_baixo,
     }
-    return render(request, 'templateProduto/homeProduto.html', contexto)
+    return render(request, 'templatesProduto/homeProduto.html', contexto)
 
 
 @login_required
@@ -209,7 +279,7 @@ def produto_add(request):
         formulario = ProdutoForm()
     
     contexto = {'form': formulario}
-    return render(request, 'templateProduto/AdicionarProduto.html', contexto)
+    return render(request, 'templatesProduto/adicionarProduto.html', contexto)
 
 
 @login_required
@@ -225,7 +295,7 @@ def produto_editar(request, produto_id):
         formulario = ProdutoForm(instance=produto)
     
     contexto = {'form': formulario, 'produto': produto}
-    return render(request, 'templateProduto/AdicionarProduto.html', contexto)
+    return render(request, 'templatesProduto/adicionarProduto.html', contexto)
 
 
 @login_required
@@ -240,76 +310,12 @@ def produto_detalhes(request, produto_id):
     """Página para visualizar detalhes completos do produto"""
     produto = get_object_or_404(ProdutoModel, id=produto_id)
     contexto = {'produto': produto}
-    return render(request, 'templateProduto/detalhesProduto.html', contexto)
+    return render(request, 'templatesProduto/detalhesProduto.html', contexto)
 
 
 @login_required
 def venda_home(request):
-    hoje = timezone.now()
-    inicio_mes = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
-    
-    total_clientes = ClienteModel.objects.count()
-    clientes_mes_atual = ClienteModel.objects.filter(id__gte=0).count()
-    
-    total_produtos = ProdutoModel.objects.count()
-    produtos_ativos = ProdutoModel.objects.filter(ativo=True).count()
-    produtos_estoque_baixo = ProdutoModel.objects.filter(
-        estoque_atual__lte=models.F('estoque_minimo')
-    ).count()
-    
-    vendas_mes = VendaModel.objects.filter(
-        data_venda__gte=inicio_mes,
-        status__in=['CONFIRMADA', 'FINALIZADA']
-    )
-    total_vendas_mes = vendas_mes.aggregate(total=Sum('valor_total'))['total'] or 0
-    qtd_vendas_mes = vendas_mes.count()
-    
-    vendas_mes_anterior = VendaModel.objects.filter(
-        data_venda__gte=mes_anterior,
-        data_venda__lt=inicio_mes,
-        status__in=['CONFIRMADA', 'FINALIZADA']
-    )
-    total_vendas_mes_anterior = vendas_mes_anterior.aggregate(total=Sum('valor_total'))['total'] or 0
-    
-    if total_vendas_mes_anterior > 0:
-        variacao_vendas = ((total_vendas_mes - total_vendas_mes_anterior) / total_vendas_mes_anterior) * 100
-    else:
-        variacao_vendas = 100 if total_vendas_mes > 0 else 0
-    
-    total_fornecedores = FornecedorModel.objects.count()
-    fornecedores_com_produtos = FornecedorModel.objects.filter(
-        produtos__isnull=False
-    ).distinct().count()
-    
-    ultimas_vendas = VendaModel.objects.select_related(
-        'cliente', 'funcionario'
-    ).order_by('-data_venda')[:5]
-    
-    produtos_recentes = ProdutoModel.objects.select_related(
-        'fornecedor'
-    ).order_by('-data_cadastro')[:5]
-    
-    produtos_alerta = ProdutoModel.objects.filter(
-        estoque_atual__lte=models.F('estoque_minimo'),
-        ativo=True
-    ).order_by('estoque_atual')[:5]
-    
-    contexto = {
-        'total_clientes': total_clientes,
-        'total_produtos': total_produtos,
-        'produtos_ativos': produtos_ativos,
-        'produtos_estoque_baixo': produtos_estoque_baixo,
-        'total_vendas_mes': total_vendas_mes,
-        'qtd_vendas_mes': qtd_vendas_mes,
-        'variacao_vendas': variacao_vendas,
-        'total_fornecedores': total_fornecedores,
-        'fornecedores_com_produtos': fornecedores_com_produtos,
-        'ultimas_vendas': ultimas_vendas,
-        'produtos_recentes': produtos_recentes,
-        'produtos_alerta': produtos_alerta,
-    }
-    
+    contexto = _montar_contexto_dashboard()
     return render(request, 'home.html', contexto)
 
 
