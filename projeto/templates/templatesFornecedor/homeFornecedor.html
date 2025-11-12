@@ -1,0 +1,535 @@
+{% load static %}
+
+<style>
+    .home-fornecedor,
+    .home-fornecedor * {
+        box-sizing: border-box;
+    }
+
+    .home-fornecedor {
+        background: #f8f9fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 30px 35px;
+        color: #212529;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .home-fornecedor .header-card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #f0f0f0;
+        padding: 24px 28px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        justify-content: space-between;
+        align-items: flex-start;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .home-fornecedor .header-text h2 {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 600;
+        color: #092e20;
+    }
+
+    .home-fornecedor .header-text p {
+        margin: 8px 0 0;
+        font-size: 14px;
+        color: #666666;
+    }
+
+    .home-fornecedor .header-meta {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .home-fornecedor .meta-pill {
+        background: rgba(68, 183, 139, 0.16);
+        color: #0c4b33;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+    }
+
+    .home-fornecedor .header-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .home-fornecedor .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 18px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid transparent;
+        background: #ffffff;
+        color: #495057;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .home-fornecedor .btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .home-fornecedor .btn-primary {
+        background: #44b78b;
+        color: #ffffff;
+        border: none;
+    }
+
+    .home-fornecedor .btn-primary:hover {
+        background: #369670;
+    }
+
+    .home-fornecedor .btn-secondary {
+        border: 1px solid #dfe0e1;
+        color: #495057;
+    }
+
+    .home-fornecedor .btn-secondary:hover {
+        background: #f1f3f5;
+    }
+
+    .home-fornecedor .btn-outline {
+        border: 1px solid rgba(12, 75, 51, 0.35);
+        color: #0c4b33;
+    }
+
+    .home-fornecedor .btn-outline:hover {
+        background: rgba(68, 183, 139, 0.12);
+        border-color: rgba(12, 75, 51, 0.5);
+    }
+
+    .home-fornecedor .btn-danger {
+        background: #dc3545;
+        color: #ffffff;
+        border: none;
+    }
+
+    .home-fornecedor .btn-danger:hover {
+        background: #c82333;
+    }
+
+    .home-fornecedor .suppliers-wrapper {
+        margin-top: 28px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 20px;
+    }
+
+    .home-fornecedor .supplier-card {
+        background: #ffffff;
+        border-radius: 10px;
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .home-fornecedor .supplier-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .home-fornecedor .supplier-card.expanded {
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    .home-fornecedor .supplier-card-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        justify-content: space-between;
+        padding: 20px 22px;
+        background: linear-gradient(180deg, #0c4b33 0%, #092e20 100%);
+        color: #ffffff;
+    }
+
+    .home-fornecedor .supplier-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .home-fornecedor .supplier-avatar svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .home-fornecedor .supplier-heading {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .home-fornecedor .supplier-heading h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .home-fornecedor .supplier-heading p {
+        margin: 6px 0 0;
+        font-size: 13px;
+        opacity: 0.85;
+    }
+
+    .home-fornecedor .status-pill {
+        background: rgba(255, 255, 255, 0.16);
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .home-fornecedor .supplier-card-body {
+        padding: 20px 22px;
+        display: grid;
+        gap: 12px;
+        background: #ffffff;
+    }
+
+    .home-fornecedor .summary-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .home-fornecedor .summary-item .label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .home-fornecedor .summary-item .value {
+        font-size: 15px;
+        color: #212529;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .home-fornecedor .supplier-details {
+        background: #f8f9fa;
+        border-top: 1px solid #f0f0f0;
+        padding: 0 22px;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s ease, padding 0.3s ease;
+    }
+
+    .home-fornecedor .supplier-card.expanded .supplier-details {
+        max-height: 460px;
+        padding: 20px 22px 22px;
+    }
+
+    .home-fornecedor .detail-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .home-fornecedor .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .home-fornecedor .detail-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .home-fornecedor .detail-value {
+        font-size: 15px;
+        color: #212529;
+        line-height: 1.45;
+    }
+
+    .home-fornecedor .supplier-card-footer {
+        padding: 16px 22px 20px;
+        background: #ffffff;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .home-fornecedor .btn-details {
+        flex: 1 1 120px;
+        justify-content: center;
+        position: relative;
+    }
+
+    .home-fornecedor .btn-details .chevron {
+        width: 10px;
+        height: 10px;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: rotate(45deg);
+        transition: transform 0.3s ease;
+        margin-right: 6px;
+    }
+
+    .home-fornecedor .supplier-card.expanded .btn-details .chevron {
+        transform: rotate(-135deg);
+    }
+
+    .home-fornecedor .supplier-card-footer .btn-secondary,
+    .home-fornecedor .supplier-card-footer .btn-danger {
+        flex: 1 1 130px;
+        justify-content: center;
+    }
+
+    .home-fornecedor .empty-state {
+        margin-top: 30px;
+        text-align: center;
+        background: #ffffff;
+        border: 1px solid #f0f0f0;
+        border-radius: 10px;
+        padding: 44px 40px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .home-fornecedor .empty-state h3 {
+        margin: 0 0 12px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #092e20;
+    }
+
+    .home-fornecedor .empty-state p {
+        margin: 0 0 24px;
+        color: #666666;
+        font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+        .home-fornecedor {
+            padding: 24px 18px;
+        }
+
+        .home-fornecedor .supplier-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .home-fornecedor .supplier-card-footer {
+            flex-direction: column;
+        }
+
+        .home-fornecedor .supplier-card-footer .btn {
+            width: 100%;
+        }
+
+        .home-fornecedor .status-pill {
+            align-self: flex-start;
+        }
+    }
+</style>
+
+<div class="home-fornecedor">
+    <section class="header-card">
+        <div class="header-text">
+            <h2>Fornecedores Cadastrados</h2>
+            <p>Centralize dados de fornecedores, contatos chave e informações fiscais em um só lugar.</p>
+            <div class="header-meta">
+                <span class="meta-pill">{{ total_fornecedores }} fornecedor{% if total_fornecedores|default:0 != 1 %}es{% endif %}</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'sistemaVendas:fornecedor_add' %}" class="btn btn-primary">
+                <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                </svg>
+                Novo Fornecedor
+            </a>
+            <a href="{% url 'sistemaVendas:home' %}" class="btn btn-secondary">
+                <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                Voltar
+            </a>
+        </div>
+    </section>
+
+    {% if fornecedores %}
+    <div class="suppliers-wrapper">
+        {% for fornecedor in fornecedores %}
+        <article class="supplier-card" id="fornecedor-card-{{ fornecedor.id }}">
+            <header class="supplier-card-header">
+                <div class="supplier-avatar" aria-hidden="true">
+                    <svg fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 10a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 1114 0H3z"/>
+                    </svg>
+                </div>
+                <div class="supplier-heading">
+                    <h3 title="{{ fornecedor.razao_social }}">{{ fornecedor.razao_social }}</h3>
+                    <p>CNPJ: {{ fornecedor.cnpj|default:"Não informado" }}</p>
+                </div>
+                <span class="status-pill">
+                    {% if fornecedor.cidade and fornecedor.uf %}
+                        {{ fornecedor.cidade }}/{{ fornecedor.uf }}
+                    {% else %}
+                        Localização não informada
+                    {% endif %}
+                </span>
+            </header>
+
+            <div class="supplier-card-body">
+                <div class="summary-item">
+                    <span class="label">Nome Fantasia</span>
+                    <span class="value">{{ fornecedor.nome_fantasia|default:"Não informado" }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">E-mail</span>
+                    <span class="value">{{ fornecedor.email|default:"Não informado" }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">Telefone</span>
+                    <span class="value">{{ fornecedor.telefone|default:"Não informado" }}</span>
+                </div>
+            </div>
+
+            <div class="supplier-details">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Celular</span>
+                        <span class="detail-value">{{ fornecedor.celular|default:"Não informado" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Inscrição Estadual</span>
+                        <span class="detail-value">{{ fornecedor.inscricao_estadual|default:"Não informado" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Contato Responsável</span>
+                        <span class="detail-value">{{ fornecedor.contato_responsavel|default:"Não informado" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Endereço Completo</span>
+                        <span class="detail-value">
+                            {% if fornecedor.endereco %}
+                                {{ fornecedor.endereco }}{% if fornecedor.numero %}, Nº {{ fornecedor.numero }}{% endif %}{% if fornecedor.complemento %} - {{ fornecedor.complemento }}{% endif %}<br>
+                                {% if fornecedor.bairro %}Bairro: {{ fornecedor.bairro }}{% endif %}
+                                {% if fornecedor.bairro and fornecedor.cidade or fornecedor.bairro and fornecedor.uf %} • {% endif %}
+                                {% if fornecedor.cidade %}{{ fornecedor.cidade }}{% endif %}{% if fornecedor.uf %}/{{ fornecedor.uf }}{% endif %}
+                                {% if fornecedor.cep %} • CEP: {{ fornecedor.cep }}{% endif %}
+                            {% else %}
+                                Endereço não informado
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="detail-item" style="grid-column: 1 / -1;">
+                        <span class="detail-label">Observações</span>
+                        <span class="detail-value">{{ fornecedor.observacoes|default:"Sem observações" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="supplier-card-footer">
+                <button type="button"
+                        class="btn btn-outline btn-details"
+                        onclick="toggleSupplierDetails('fornecedor-card-{{ fornecedor.id }}')"
+                        aria-expanded="false">
+                    <span class="chevron"></span>
+                    <span class="btn-text">Detalhes</span>
+                </button>
+                <a href="{% url 'sistemaVendas:fornecedor_editar' fornecedor.id %}" class="btn btn-secondary">
+                    <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M17.414 2.586a2 2 0 010 2.828l-9.9 9.9a1 1 0 01-.465.263l-3.4.85a.5.5 0 01-.606-.606l.85-3.4a1 1 0 01.263-.465l9.9-9.9a2 2 0 012.828 0zM15 4l-9.5 9.5-.35 1.4 1.4-.35L16 5.414 15 4z"/>
+                    </svg>
+                    Editar
+                </a>
+                <a href="{% url 'sistemaVendas:fornecedor_deletar' fornecedor.id %}"
+                   class="btn btn-danger"
+                   onclick="return confirm('Tem certeza que deseja excluir {{ fornecedor.razao_social }}?')">
+                    <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM8 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 10-2 0v6a1 1 0 102 0V8z" clip-rule="evenodd"/>
+                    </svg>
+                    Excluir
+                </a>
+            </footer>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <section class="empty-state">
+        <h3>Nenhum fornecedor cadastrado</h3>
+        <p>Cadastre o primeiro fornecedor para acompanhar seus contatos e pedidos futuros.</p>
+        <a href="{% url 'sistemaVendas:fornecedor_add' %}" class="btn btn-primary">
+            <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+            </svg>
+            Adicionar fornecedor
+        </a>
+    </section>
+    {% endif %}
+</div>
+
+<script>
+function toggleSupplierDetails(cardId) {
+    const card = document.getElementById(cardId);
+    if (!card) {
+        return;
+    }
+
+    document.querySelectorAll('.home-fornecedor .supplier-card.expanded').forEach(otherCard => {
+        if (otherCard.id !== cardId) {
+            otherCard.classList.remove('expanded');
+            const otherButton = otherCard.querySelector('.btn-details');
+            if (otherButton) {
+                otherButton.setAttribute('aria-expanded', 'false');
+                const otherText = otherButton.querySelector('.btn-text');
+                if (otherText) {
+                    otherText.textContent = 'Detalhes';
+                }
+            }
+        }
+    });
+
+    card.classList.toggle('expanded');
+
+    const button = card.querySelector('.btn-details');
+    const text = button ? button.querySelector('.btn-text') : null;
+    const isExpanded = card.classList.contains('expanded');
+
+    if (button) {
+        button.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+    }
+
+    if (text) {
+        text.textContent = isExpanded ? 'Fechar' : 'Detalhes';
+    }
+}
+</script>

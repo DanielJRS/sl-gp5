@@ -1,3 +1,6 @@
+import json
+from decimal import Decimal
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -20,6 +23,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth import logout as auth_logout
 from django.contrib import messages
+from django.core.serializers.json import DjangoJSONEncoder
 
 def loginForm(request):
     next_url = request.POST.get('next') or request.GET.get('next') or ''
@@ -36,9 +40,77 @@ def loginForm(request):
         form = CustomLoginForm()
     return render(request, 'login.html', {'form': form, 'next': next_url})
 
+def _montar_contexto_dashboard():
+    """Monta os dados exibidos no painel principal/home."""
+    hoje = timezone.now()
+    inicio_mes = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
+
+    total_clientes = ClienteModel.objects.count()
+
+    total_produtos = ProdutoModel.objects.count()
+    produtos_ativos = ProdutoModel.objects.filter(ativo=True).count()
+    produtos_estoque_baixo = ProdutoModel.objects.filter(
+        estoque_atual__lte=models.F('estoque_minimo')
+    ).count()
+
+    vendas_mes = VendaModel.objects.filter(
+        data_venda__gte=inicio_mes,
+        status__in=['CONFIRMADA']
+    )
+    total_vendas_mes = vendas_mes.aggregate(total=Sum('valor_total'))['total'] or 0
+    qtd_vendas_mes = vendas_mes.count()
+
+    vendas_mes_anterior = VendaModel.objects.filter(
+        data_venda__gte=mes_anterior,
+        data_venda__lt=inicio_mes,
+        status__in=['CONFIRMADA']
+    )
+    total_vendas_mes_anterior = vendas_mes_anterior.aggregate(total=Sum('valor_total'))['total'] or 0
+
+    if total_vendas_mes_anterior > 0:
+        variacao_vendas = ((total_vendas_mes - total_vendas_mes_anterior) / total_vendas_mes_anterior) * 100
+    else:
+        variacao_vendas = 100 if total_vendas_mes > 0 else 0
+
+    total_fornecedores = FornecedorModel.objects.count()
+    fornecedores_com_produtos = FornecedorModel.objects.filter(
+        produtos__isnull=False
+    ).distinct().count()
+
+    ultimas_vendas = VendaModel.objects.select_related(
+        'cliente', 'funcionario'
+    ).order_by('-data_venda')[:5]
+
+    produtos_recentes = ProdutoModel.objects.select_related(
+        'fornecedor'
+    ).order_by('-data_cadastro')[:5]
+
+    produtos_alerta = ProdutoModel.objects.filter(
+        estoque_atual__lte=models.F('estoque_minimo'),
+        ativo=True
+    ).order_by('estoque_atual')[:5]
+
+    return {
+        'total_clientes': total_clientes,
+        'total_produtos': total_produtos,
+        'produtos_ativos': produtos_ativos,
+        'produtos_estoque_baixo': produtos_estoque_baixo,
+        'total_vendas_mes': total_vendas_mes,
+        'qtd_vendas_mes': qtd_vendas_mes,
+        'variacao_vendas': variacao_vendas,
+        'total_fornecedores': total_fornecedores,
+        'fornecedores_com_produtos': fornecedores_com_produtos,
+        'ultimas_vendas': ultimas_vendas,
+        'produtos_recentes': produtos_recentes,
+        'produtos_alerta': produtos_alerta,
+    }
+
+
 @login_required
 def home(request):
-    return render(request, 'home.html')
+    contexto = _montar_contexto_dashboard()
+    return render(request, 'home.html', contexto)
 
 
 @login_required
@@ -92,7 +164,7 @@ def funcionario_home(request):
         'funcionarios': funcionarios,  
         'total_funcionarios': funcionarios.count()
     }
-    return render(request, 'templatefuncionario/homefuncionario.html', contexto)
+    return render(request, 'templatesFuncionario/homeFuncionario.html', contexto)
 
 
 @login_required
@@ -106,7 +178,7 @@ def funcionario_add(request):
         formulario = FuncionarioForm()
     
     contexto = {'form': formulario}
-    return render(request, 'templatefuncionario/Adicionarfuncionario.html', contexto)
+    return render(request, 'templatesFuncionario/adicionarFuncionario.html', contexto)
 
 
 @login_required
@@ -122,7 +194,7 @@ def funcionario_editar(request, funcionario_id):
         formulario = FuncionarioForm(instance=funcionario)
     
     contexto = {'form': formulario, 'funcionario': funcionario}
-    return render(request, 'templatefuncionario/Adicionarfuncionario.html', contexto)
+    return render(request, 'templatesFuncionario/adicionarFuncionario.html', contexto)
 
 @login_required
 def funcionario_deletar(request, funcionario_id):
@@ -138,7 +210,7 @@ def fornecedor_home(request):
         'fornecedores': fornecedores,  
         'total_fornecedores': fornecedores.count()
     }
-    return render(request, 'templateFornecedor/homeFornecedor.html', contexto)
+    return render(request, 'templatesFornecedor/homeFornecedor.html', contexto)
 
 
 @login_required
@@ -152,7 +224,7 @@ def fornecedor_add(request):
         formulario = FornecedorForm()
     
     contexto = {'form': formulario}
-    return render(request, 'templateFornecedor/AdicionarFornecedor.html', contexto)
+    return render(request, 'templatesFornecedor/adicionarFornecedor.html', contexto)
 
 
 @login_required
@@ -168,7 +240,7 @@ def fornecedor_editar(request, fornecedor_id):
         formulario = FornecedorForm(instance=fornecedor)
     
     contexto = {'form': formulario, 'fornecedor': fornecedor}
-    return render(request, 'templateFornecedor/AdicionarFornecedor.html', contexto)
+    return render(request, 'templatesFornecedor/adicionarFornecedor.html', contexto)
 
 
 @login_required
@@ -194,8 +266,10 @@ def produto_home(request):
         'produtos': produtos,
         'total_produtos': produtos.count(),
         'categorias': ProdutoModel.CATEGORIA_CHOICES,
+        'categoria_selecionada': categoria,
+        'estoque_baixo': estoque_baixo,
     }
-    return render(request, 'templateProduto/homeProduto.html', contexto)
+    return render(request, 'templatesProduto/homeProduto.html', contexto)
 
 
 @login_required
@@ -209,7 +283,7 @@ def produto_add(request):
         formulario = ProdutoForm()
     
     contexto = {'form': formulario}
-    return render(request, 'templateProduto/AdicionarProduto.html', contexto)
+    return render(request, 'templatesProduto/adicionarProduto.html', contexto)
 
 
 @login_required
@@ -225,7 +299,7 @@ def produto_editar(request, produto_id):
         formulario = ProdutoForm(instance=produto)
     
     contexto = {'form': formulario, 'produto': produto}
-    return render(request, 'templateProduto/AdicionarProduto.html', contexto)
+    return render(request, 'templatesProduto/adicionarProduto.html', contexto)
 
 
 @login_required
@@ -240,82 +314,24 @@ def produto_detalhes(request, produto_id):
     """Página para visualizar detalhes completos do produto"""
     produto = get_object_or_404(ProdutoModel, id=produto_id)
     contexto = {'produto': produto}
-    return render(request, 'templateProduto/detalhesProduto.html', contexto)
-
-
-@login_required
-def venda_home(request):
-    hoje = timezone.now()
-    inicio_mes = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
-    
-    total_clientes = ClienteModel.objects.count()
-    clientes_mes_atual = ClienteModel.objects.filter(id__gte=0).count()
-    
-    total_produtos = ProdutoModel.objects.count()
-    produtos_ativos = ProdutoModel.objects.filter(ativo=True).count()
-    produtos_estoque_baixo = ProdutoModel.objects.filter(
-        estoque_atual__lte=models.F('estoque_minimo')
-    ).count()
-    
-    vendas_mes = VendaModel.objects.filter(
-        data_venda__gte=inicio_mes,
-        status__in=['CONFIRMADA', 'FINALIZADA']
-    )
-    total_vendas_mes = vendas_mes.aggregate(total=Sum('valor_total'))['total'] or 0
-    qtd_vendas_mes = vendas_mes.count()
-    
-    vendas_mes_anterior = VendaModel.objects.filter(
-        data_venda__gte=mes_anterior,
-        data_venda__lt=inicio_mes,
-        status__in=['CONFIRMADA', 'FINALIZADA']
-    )
-    total_vendas_mes_anterior = vendas_mes_anterior.aggregate(total=Sum('valor_total'))['total'] or 0
-    
-    if total_vendas_mes_anterior > 0:
-        variacao_vendas = ((total_vendas_mes - total_vendas_mes_anterior) / total_vendas_mes_anterior) * 100
-    else:
-        variacao_vendas = 100 if total_vendas_mes > 0 else 0
-    
-    total_fornecedores = FornecedorModel.objects.count()
-    fornecedores_com_produtos = FornecedorModel.objects.filter(
-        produtos__isnull=False
-    ).distinct().count()
-    
-    ultimas_vendas = VendaModel.objects.select_related(
-        'cliente', 'funcionario'
-    ).order_by('-data_venda')[:5]
-    
-    produtos_recentes = ProdutoModel.objects.select_related(
-        'fornecedor'
-    ).order_by('-data_cadastro')[:5]
-    
-    produtos_alerta = ProdutoModel.objects.filter(
-        estoque_atual__lte=models.F('estoque_minimo'),
-        ativo=True
-    ).order_by('estoque_atual')[:5]
-    
-    contexto = {
-        'total_clientes': total_clientes,
-        'total_produtos': total_produtos,
-        'produtos_ativos': produtos_ativos,
-        'produtos_estoque_baixo': produtos_estoque_baixo,
-        'total_vendas_mes': total_vendas_mes,
-        'qtd_vendas_mes': qtd_vendas_mes,
-        'variacao_vendas': variacao_vendas,
-        'total_fornecedores': total_fornecedores,
-        'fornecedores_com_produtos': fornecedores_com_produtos,
-        'ultimas_vendas': ultimas_vendas,
-        'produtos_recentes': produtos_recentes,
-        'produtos_alerta': produtos_alerta,
-    }
-    
-    return render(request, 'home.html', contexto)
-
+    return render(request, 'templatesProduto/detalhesProduto.html', contexto)
 
 @login_required
 @transaction.atomic
 def venda_add(request):
+    produtos_queryset = ProdutoModel.objects.filter(ativo=True).values(
+        'id',
+        'nome',
+        'preco_venda',
+        'estoque_atual',
+        'unidade_medida'
+    )
+    produtos_json = json.dumps(list(produtos_queryset), cls=DjangoJSONEncoder)
+    vendas = VendaModel.objects.select_related(
+        'cliente',
+        'funcionario'
+    ).order_by('-data_venda')[:8]
+
     if request.method == 'POST':
         form = VendaForm(request.POST)
         formset = ItemVendaFormSet(request.POST)
@@ -339,8 +355,10 @@ def venda_add(request):
     contexto = {
         'form': form,
         'formset': formset,
+        'produtos_json': produtos_json,
+        'vendas': vendas,
     }
-    return render(request, 'templateVenda/AdicionarVenda.html', contexto)
+    return render(request, 'templateVenda/efetuarVenda.html', contexto)
 
 
 @login_required
@@ -348,12 +366,36 @@ def venda_detalhes(request, venda_id):
     """Página para visualizar detalhes completos da venda"""
     venda = get_object_or_404(VendaModel, id=venda_id)
     itens = venda.itens.all()
+    desconto_percentual = Decimal(venda.desconto or 0)
+    desconto_total_reais = (venda.subtotal or Decimal('0')) * (desconto_percentual / Decimal('100'))
     
     contexto = {
         'venda': venda,
         'itens': itens,
+        'desconto_total_reais': desconto_total_reais,
     }
     return render(request, 'templateVenda/detalhesVenda.html', contexto)
+
+
+@login_required
+def venda_listar(request):
+    """Lista todas as vendas para consulta administrativa"""
+    status_filtro = request.GET.get('status', '').upper()
+    vendas_queryset = VendaModel.objects.select_related('cliente', 'funcionario').order_by('-data_venda')
+
+    if status_filtro:
+        vendas_queryset = vendas_queryset.filter(status=status_filtro)
+
+    total_valor = vendas_queryset.aggregate(total=Sum('valor_total'))['total'] or Decimal('0')
+
+    contexto = {
+        'vendas': vendas_queryset,
+        'status_choices': VendaModel.STATUS_CHOICES,
+        'status_filtro': status_filtro,
+        'total_vendas': vendas_queryset.count(),
+        'total_valor': total_valor,
+    }
+    return render(request, 'templateVenda/listarVendas.html', contexto)
 
 
 @login_required
@@ -361,9 +403,21 @@ def venda_detalhes(request, venda_id):
 def venda_editar(request, venda_id):
     """Página para editar uma venda existente"""
     venda = get_object_or_404(VendaModel, id=venda_id)
+    produtos_queryset = ProdutoModel.objects.filter(ativo=True).values(
+        'id',
+        'nome',
+        'preco_venda',
+        'estoque_atual',
+        'unidade_medida'
+    )
+    produtos_json = json.dumps(list(produtos_queryset), cls=DjangoJSONEncoder)
+    vendas = VendaModel.objects.select_related(
+        'cliente',
+        'funcionario'
+    ).order_by('-data_venda')[:8]
     
-    if venda.status in ['CANCELADA', 'FINALIZADA']:
-        messages.error(request, 'Não é possível editar uma venda cancelada ou finalizada.')
+    if venda.status == 'CANCELADA':
+        messages.error(request, 'Não é possível editar uma venda cancelada.')
         return redirect('sistemaVendas:venda_detalhes', venda_id=venda.id)
     
     for item in venda.itens.all():
@@ -394,8 +448,10 @@ def venda_editar(request, venda_id):
         'form': form,
         'formset': formset,
         'venda': venda,
+        'produtos_json': produtos_json,
+        'vendas': vendas,
     }
-    return render(request, 'templateVenda/AdicionarVenda.html', contexto)
+    return render(request, 'templateVenda/efetuarVenda.html', contexto)
 
 
 @login_required
@@ -426,23 +482,23 @@ def venda_cancelar(request, venda_id):
 
 @login_required
 def venda_deletar(request, venda_id):
-    """Deleta uma venda (apenas orçamentos)"""
+    """Deleta uma venda enquanto estiver pendente"""
     venda = get_object_or_404(VendaModel, id=venda_id)
     
-    if venda.status != 'ORCAMENTO':
-        messages.error(request, 'Apenas orçamentos podem ser deletados. Use o cancelamento para outras vendas.')
+    if venda.status != 'PENDENTE':
+        messages.error(request, 'Apenas vendas pendentes podem ser deletadas. Use o cancelamento para outras situações.')
         return redirect('sistemaVendas:venda_detalhes', venda_id=venda.id)
     
     venda.delete()
-    messages.success(request, 'Orçamento deletado com sucesso!')
+    messages.success(request, 'Registro excluído com sucesso!')
     return redirect('sistemaVendas:venda_home')
 
 
-@login_required
 def logout_view(request):
     if request.method == 'POST':
-        auth_logout(request)
-        messages.success(request, 'Você saiu do sistema com sucesso!')
-        return redirect('sistemaVendas:loginForm')
-    return render(request, 'logout_confirm.html')
+        if request.user.is_authenticated:
+            auth_logout(request)
+            messages.success(request, 'Você saiu do sistema com sucesso!')
+        return redirect('sistemaVendas:login')
+    return render(request, 'login.html')
 

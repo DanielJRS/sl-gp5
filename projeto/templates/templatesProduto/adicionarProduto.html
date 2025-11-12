@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Adicionar Produto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .form-card {
+            max-width: 980px;
+            margin: 40px auto;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #2d5f4f 0%, #3a7561 100%);
+            color: white;
+        }
+        .required-field::after {
+            content: " *";
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container form-card">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0"><i class="fas fa-box-open me-2"></i>Adicionar Produto</h5>
+                <a class="btn btn-sm btn-light" href="{% url 'sistemaVendas:produto_home' %}">
+                    <i class="fas fa-arrow-left me-1"></i>Voltar
+                </a>
+            </div>
+            <div class="card-body p-4">
+                {% if form.errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong><i class="fas fa-exclamation-triangle me-2"></i>Corrija os erros abaixo:</strong>
+                    <ul class="mb-0 mt-2">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                        <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Identificação -->
+                    <h6 class="text-muted mb-3 border-bottom pb-2">
+                        <i class="fas fa-id-badge me-2"></i>Identificação
+                    </h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="{{ form.codigo.id_for_label }}" class="form-label required-field">
+                                {{ form.codigo.label }}
+                            </label>
+                            {{ form.codigo }}
+                            {% if form.codigo.errors %}
+                                <div class="text-danger small">{{ form.codigo.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.codigo_barras.id_for_label }}" class="form-label">
+                                {{ form.codigo_barras.label }}
+                            </label>
+                            {{ form.codigo_barras }}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.fornecedor.id_for_label }}" class="form-label">
+                                {{ form.fornecedor.label }}
+                            </label>
+                            {{ form.fornecedor }}
+                        </div>
+                        <div class="col-md-8">
+                            <label for="{{ form.nome.id_for_label }}" class="form-label required-field">
+                                {{ form.nome.label }}
+                            </label>
+                            {{ form.nome }}
+                            {% if form.nome.errors %}
+                                <div class="text-danger small">{{ form.nome.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 align-self-center">
+                            <div class="form-check form-switch mt-4">
+                                {{ form.ativo }}
+                                <label class="form-check-label" for="{{ form.ativo.id_for_label }}">
+                                    {{ form.ativo.label }}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label for="{{ form.descricao.id_for_label }}" class="form-label">
+                                {{ form.descricao.label }}
+                            </label>
+                            {{ form.descricao }}
+                        </div>
+                    </div>
+
+                    <!-- Classificação -->
+                    <h6 class="text-muted mb-3 border-bottom pb-2">
+                        <i class="fas fa-tags me-2"></i>Classificação
+                    </h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="{{ form.categoria.id_for_label }}" class="form-label">
+                                {{ form.categoria.label }}
+                            </label>
+                            {{ form.categoria }}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.unidade_medida.id_for_label }}" class="form-label">
+                                {{ form.unidade_medida.label }}
+                            </label>
+                            {{ form.unidade_medida }}
+                        </div>
+                    </div>
+
+                    <!-- Estoque -->
+                    <h6 class="text-muted mb-3 border-bottom pb-2">
+                        <i class="fas fa-warehouse me-2"></i>Estoque
+                    </h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="{{ form.estoque_atual.id_for_label }}" class="form-label">
+                                {{ form.estoque_atual.label }}
+                            </label>
+                            {{ form.estoque_atual }}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.estoque_minimo.id_for_label }}" class="form-label">
+                                {{ form.estoque_minimo.label }}
+                            </label>
+                            {{ form.estoque_minimo }}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.estoque_maximo.id_for_label }}" class="form-label">
+                                {{ form.estoque_maximo.label }}
+                            </label>
+                            {{ form.estoque_maximo }}
+                        </div>
+                    </div>
+
+                    <!-- Preços -->
+                    <h6 class="text-muted mb-3 border-bottom pb-2">
+                        <i class="fas fa-cash-register me-2"></i>Precificação
+                    </h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="{{ form.preco_custo.id_for_label }}" class="form-label">
+                                {{ form.preco_custo.label }}
+                            </label>
+                            {{ form.preco_custo }}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.preco_venda.id_for_label }}" class="form-label">
+                                {{ form.preco_venda.label }}
+                            </label>
+                            {{ form.preco_venda }}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.margem_lucro.id_for_label }}" class="form-label">
+                                {{ form.margem_lucro.label }}
+                            </label>
+                            {{ form.margem_lucro }}
+                        </div>
+                    </div>
+
+                    <!-- Observações -->
+                    <h6 class="text-muted mb-3 border-bottom pb-2">
+                        <i class="fas fa-note-sticky me-2"></i>Observações
+                    </h6>
+                    <div class="mb-4">
+                        {{ form.observacoes }}
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end border-top pt-3">
+                        <a class="btn btn-outline-secondary" href="{% url 'sistemaVendas:produto_home' %}">
+                            <i class="fas fa-times me-1"></i>Cancelar
+                        </a>
+                        <button class="btn btn-success" type="submit">
+                            <i class="fas fa-save me-1"></i>Salvar Produto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

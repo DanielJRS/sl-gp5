@@ -4,6 +4,7 @@ from . import views
 app_name = 'sistemaVendas'
 
 urlpatterns = [
+    path('', views.loginForm, name='login'),
 	path('login/', views.loginForm, name='login'),
 	path('home/', views.home, name='home'),
 
@@ -34,8 +35,9 @@ urlpatterns = [
     path('produto/detalhes/<int:produto_id>/', views.produto_detalhes, name='produto_detalhes'),
 
     #URL para venda
-    path('venda/', views.venda_home, name='venda_home'),
+    path('venda/', views.venda_add, name='venda_home'),
     path('venda/adicionar/', views.venda_add, name='venda_add'),
+    path('venda/listar/', views.venda_listar, name='venda_listar'),
     path('venda/detalhes/<int:venda_id>/', views.venda_detalhes, name='venda_detalhes'),
     path('venda/editar/<int:venda_id>/', views.venda_editar, name='venda_editar'),
     path('venda/cancelar/<int:venda_id>/', views.venda_cancelar, name='venda_cancelar'),

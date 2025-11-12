@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+{% load tz %}
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Vendas</title>
+    <style>
+        :root {
+            --brand-primary: #0c4b33;
+            --brand-secondary: #092e20;
+            --brand-accent: #44b78b;
+            --gray-50: #fdfefe;
+            --gray-100: #f8f9fa;
+            --gray-200: #f1f3f5;
+            --gray-300: #dfe0e1;
+            --gray-500: #868e96;
+            --gray-700: #495057;
+            --gray-900: #212529;
+            --danger: #dc3545;
+            --warning: #f59f00;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--gray-100);
+            color: var(--gray-900);
+            padding: 32px 24px 48px;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            background: linear-gradient(180deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+            padding: 36px 40px;
+            border-radius: 18px;
+            color: rgba(255, 255, 255, 0.92);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 24px;
+            box-shadow: 0 22px 45px rgba(9, 46, 32, 0.18);
+            margin-bottom: 32px;
+        }
+
+        .hero h1 {
+            margin: 12px 0 8px;
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        .hero p {
+            margin: 0;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(180deg, var(--brand-accent) 0%, #369670 100%);
+            color: #fff;
+            box-shadow: 0 12px 20px rgba(68, 183, 139, 0.25);
+        }
+
+        .btn-outline {
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: #fff;
+            background: transparent;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid rgba(12, 75, 51, 0.08);
+            box-shadow: 0 12px 30px rgba(9, 46, 32, 0.08);
+            padding: 28px 30px;
+            margin-bottom: 24px;
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .filters select {
+            border: 1px solid var(--gray-300);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 14px;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .summary-card span {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.35px;
+            color: var(--gray-500);
+        }
+
+        .summary-card strong {
+            font-size: 22px;
+            color: var(--brand-secondary);
+        }
+
+        .items-table {
+            border: 1px solid var(--gray-200);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--gray-100);
+        }
+
+        th, td {
+            text-align: left;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 14px;
+        }
+
+        th {
+            text-transform: uppercase;
+            color: var(--gray-600);
+            letter-spacing: 0.35px;
+            font-size: 12px;
+        }
+
+        tbody tr:hover {
+            background: #fbfdfc;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pill[data-status="PENDENTE"] {
+            background: rgba(245, 159, 0, 0.15);
+            color: var(--warning);
+        }
+
+        .status-pill[data-status="CONFIRMADA"] {
+            background: rgba(68, 183, 139, 0.18);
+            color: var(--brand-primary);
+        }
+
+        .status-pill[data-status="CANCELADA"] {
+            background: rgba(220, 53, 69, 0.18);
+            color: var(--danger);
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .actions a {
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--brand-accent);
+        }
+
+        .empty-state {
+            padding: 28px 16px;
+            text-align: center;
+            color: var(--gray-500);
+        }
+
+        @media (max-width: 720px) {
+            body {
+                padding: 24px 16px 40px;
+            }
+
+            .hero {
+                padding: 28px;
+            }
+
+            .card {
+                padding: 22px 20px;
+            }
+
+            th, td {
+                padding: 12px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header class="hero">
+            <div>
+                <span class="status-pill" data-status="CONFIRMADA">Relatório</span>
+                <h1>Registro de vendas</h1>
+                <p>Acompanhe todas as vendas lançadas no sistema, filtre por status e revise os detalhes rapidamente.</p>
+            </div>
+            <div class="hero-actions">
+                <a href="{% url 'sistemaVendas:home' %}" class="btn btn-outline">Voltar para painel</a>
+                <a href="{% url 'sistemaVendas:venda_add' %}" class="btn btn-primary">Nova venda</a>
+            </div>
+        </header>
+
+        <section class="card">
+            <form method="get" class="filters">
+                <label for="status">Filtrar por status</label>
+                <select name="status" id="status" onchange="this.form.submit()">
+                    <option value="">Todos</option>
+                    {% for codigo, label in status_choices %}
+                        <option value="{{ codigo }}" {% if status_filtro == codigo %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if status_filtro %}
+                <a href="{% url 'sistemaVendas:venda_listar' %}" class="btn" style="background: var(--gray-200); color: var(--gray-700);">Limpar filtro</a>
+                {% endif %}
+            </form>
+
+            <div class="summary">
+                <div class="summary-card">
+                    <span>Quantidade listada</span>
+                    <strong>{{ total_vendas }}</strong>
+                </div>
+                <div class="summary-card">
+                    <span>Valor total</span>
+                    <strong>R$ {{ total_valor|floatformat:2 }}</strong>
+                </div>
+            </div>
+
+            <div class="items-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nº</th>
+                            <th>Cliente</th>
+                            <th>Vendedor</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if vendas %}
+                            {% for venda in vendas %}
+                            <tr>
+                                <td>{{ venda.numero_venda }}</td>
+                                <td>{{ venda.cliente.nome }}</td>
+                                <td>{{ venda.funcionario.nome }}</td>
+                                <td>{{ venda.data_venda|timezone:"America/Sao_Paulo"|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <span class="status-pill" data-status="{{ venda.status }}">{{ venda.get_status_display }}</span>
+                                </td>
+                                <td>R$ {{ venda.valor_total|floatformat:2 }}</td>
+                                <td class="actions">
+                                    <a href="{% url 'sistemaVendas:venda_detalhes' venda_id=venda.id %}">Detalhes</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="empty-state">Nenhuma venda encontrada para o filtro aplicado.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

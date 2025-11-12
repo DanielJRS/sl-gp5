@@ -1,232 +1,922 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Efetuar Venda</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if venda %}Editar Venda {{ venda.numero_venda }}{% else %}Efetuar Venda{% endif %}</title>
     <style>
         :root {
-            --primary: #2d5f4f;
-            --primary-light: #3a7561;
+            --brand-primary: #0c4b33;
+            --brand-secondary: #092e20;
+            --brand-accent: #44b78b;
+            --gray-100: #f8f9fa;
+            --gray-200: #f1f3f5;
+            --gray-300: #dfe0e1;
+            --gray-400: #ced4da;
+            --gray-700: #495057;
+            --gray-900: #212529;
+            --danger: #dc3545;
+            --warning: #f59f00;
         }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #f5f5f5;
-        }
-        .page-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white;
-            border-radius: 16px;
-            padding: 28px;
-            margin-bottom: 32px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-        }
-        .page-header h2 {
             margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--gray-100);
+            color: var(--gray-900);
+            padding: 32px 24px 48px;
+        }
+
+        .venda-page {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        .venda-hero {
+            background: linear-gradient(180deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+            color: rgba(255, 255, 255, 0.92);
+            padding: 36px 40px;
+            border-radius: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 24px;
+            box-shadow: 0 22px 45px rgba(9, 46, 32, 0.15);
+            margin-bottom: 32px;
+            width: 100%;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.16);
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 13px;
             font-weight: 600;
-        }
-        .card-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white;
-        }
-        .card {
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.06);
-        }
-        .table thead {
-            background-color: #e9f2ef;
-        }
-        .action-buttons a,
-        .action-buttons form {
-            display: inline-block;
-        }
-        .form-section-title {
-            font-size: 0.95rem;
+            letter-spacing: 0.4px;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #6c757d;
+        }
+
+        .venda-hero h1 {
+            margin: 12px 0 8px;
+            font-size: 32px;
             font-weight: 600;
+        }
+
+        .venda-hero p {
+            margin: 0;
+            max-width: 560px;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 14px 18px;
+            border-radius: 14px;
+            min-width: 160px;
+        }
+
+        .hero-meta .meta-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            opacity: 0.7;
+            margin-bottom: 6px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(180deg, var(--brand-accent) 0%, #369670 100%);
+            color: #ffffff;
+            box-shadow: 0 12px 20px rgba(68, 183, 139, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 26px rgba(68, 183, 139, 0.25);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: #ffffff;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-outline.dark {
+            border-color: var(--gray-300);
+            color: var(--gray-900);
+        }
+
+        .btn-outline.dark:hover {
+            background: var(--gray-200);
+        }
+
+        .btn-tonal {
+            background: rgba(68, 183, 139, 0.12);
+            color: var(--brand-accent);
+            border: 1px solid rgba(68, 183, 139, 0.25);
+        }
+
+        .btn-tonal:hover {
+            background: rgba(68, 183, 139, 0.18);
+        }
+
+        .venda-grid {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .venda-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid rgba(12, 75, 51, 0.07);
+            box-shadow: 0 12px 30px rgba(9, 46, 32, 0.08);
+            padding: 32px 34px;
+            margin: 0 auto;
+        }
+
+        .venda-form {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .card-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section-heading h2 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--brand-secondary);
+            font-weight: 600;
+        }
+
+        .section-heading p {
+            margin: 6px 0 0;
+            color: var(--gray-700);
+            font-size: 14px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px 20px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-field[data-span="full"] {
+            grid-column: 1 / -1;
+        }
+
+        .form-field label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-700);
+            letter-spacing: 0.2px;
+        }
+
+        .form-field label span {
+            color: var(--danger);
+        }
+
+        .form-control,
+        .form-select,
+        textarea {
+            width: 100%;
+            border: 1px solid var(--gray-300);
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 14px;
+            color: var(--gray-900);
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .form-control[readonly] {
+            background: var(--gray-100);
+            color: var(--gray-500);
+            cursor: not-allowed;
+        }
+
+        .form-control:focus,
+        .form-select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--brand-accent);
+            box-shadow: 0 0 0 3px rgba(68, 183, 139, 0.18);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .field-error {
+            font-size: 12px;
+            color: var(--danger);
+            background: rgba(220, 53, 69, 0.08);
+            border-left: 3px solid rgba(220, 53, 69, 0.4);
+            padding: 8px 10px;
+            border-radius: 8px;
+        }
+
+        .items-table {
+            border: 1px solid var(--gray-200);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .items-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .items-table thead {
+            background: var(--gray-100);
+        }
+
+        .items-table th {
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.35px;
+            color: var(--gray-700);
+            padding: 14px 18px;
+        }
+
+        .items-table td {
+            padding: 14px 18px;
+            border-top: 1px solid var(--gray-200);
+            vertical-align: top;
+        }
+
+        .item-row {
+            transition: background 0.2s ease;
+        }
+
+        .item-row:hover {
+            background: #fcfefd;
+        }
+
+        .item-row--hidden {
+            opacity: 0.4;
+        }
+
+        .field-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field-hint {
+            font-size: 12px;
+            color: var(--gray-700);
+            opacity: 0.7;
+        }
+
+        .line-total {
+            font-weight: 600;
+            color: var(--brand-secondary);
+        }
+
+        .icon-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid rgba(220, 53, 69, 0.35);
+            color: var(--danger);
+            background: rgba(220, 53, 69, 0.08);
+            cursor: pointer;
+        }
+
+        .icon-button:hover {
+            background: rgba(220, 53, 69, 0.14);
+        }
+
+        .totals-section {
+            border: 1px solid var(--gray-200);
+            border-radius: 14px;
+            padding: 20px 24px;
+            background: #fbfdfc;
+        }
+
+        .totals-section h2 {
+            margin: 0 0 16px;
+            font-size: 18px;
+            color: var(--brand-secondary);
+        }
+
+        .totals-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .total-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            font-size: 15px;
+        }
+
+        .total-line--grand {
+            padding-top: 10px;
+            border-top: 1px dashed rgba(12, 75, 51, 0.2);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .discount-control {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .field-with-suffix {
+            position: relative;
+        }
+
+        .field-with-suffix input {
+            padding-right: 44px;
+        }
+
+        .input-suffix {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-500);
+            pointer-events: none;
+        }
+
+        .discount-value {
+            font-size: 12px;
+            color: var(--gray-700);
+            opacity: 0.8;
+        }
+
+        .section-heading--with-action {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .section-heading--with-action .section-heading__info {
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .form-alert {
+            background: rgba(220, 53, 69, 0.12);
+            border: 1px solid rgba(220, 53, 69, 0.32);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            color: var(--danger);
+        }
+
+        .form-alert ul {
+            margin: 10px 0 0;
+            padding-left: 18px;
+            color: var(--gray-900);
+        }
+
+        @media (max-width: 720px) {
+            body {
+                padding: 24px 16px 40px;
+            }
+
+            .venda-card {
+                padding: 26px 24px;
+            }
+
+            .form-actions {
+                flex-direction: column-reverse;
+                align-items: stretch;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container py-4">
-        <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div class="venda-page">
+        <header class="venda-hero">
             <div>
-                <h2 class="mb-1"><i class="fas fa-cash-register me-2"></i>Efetuar Venda</h2>
-                <p class="mb-0 text-opacity-75">Cadastre novas vendas, consulte registros recentes e mantenha o estoque sempre atualizado.</p>
+                <span class="hero-badge">Operações</span>
+                <h1>{% if venda %}Editar venda{% else %}Efetuar nova venda{% endif %}</h1>
+                <p>Conecte clientes, colaboradores e produtos para concluir a negociação com controle total dos valores.</p>
             </div>
-            <a class="btn btn-light btn-lg" href="{% url 'sistemaVendas:venda_home' %}">
-                <i class="fas fa-arrow-left me-2"></i>Voltar para painel
-            </a>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-12 col-lg-6">
-                <div class="card">
-                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Cadastro da Venda</h5>
-                        <span class="badge bg-light text-dark">CRUD - Create</span>
-                    </div>
-                    <div class="card-body">
-                        {% if form.errors or formset.non_form_errors %}
-                        <div class="alert alert-danger">
-                            <strong>Verifique os campos destacados.</strong>
-                            <ul class="mb-0 mt-2">
-                                {% for field in form %}
-                                    {% for error in field.errors %}
-                                        <li>{{ field.label }}: {{ error }}</li>
-                                    {% endfor %}
-                                {% endfor %}
-                                {% for error in form.non_field_errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                                {% for error in formset.non_form_errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        {% endif %}
-
-                        <form method="post" novalidate>
-                            {% csrf_token %}
-                            <div class="mb-4">
-                                <span class="form-section-title d-block mb-2"><i class="fas fa-file-invoice me-2"></i>Dados Gerais</span>
-                                <div class="row g-3">
-                                    {% for field in form %}
-                                    <div class="col-md-6">
-                                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                        {{ field }}
-                                        {% if field.help_text %}
-                                            <small class="text-muted d-block">{{ field.help_text }}</small>
-                                        {% endif %}
-                                        {% if field.errors %}
-                                            <div class="text-danger small">{{ field.errors.0 }}</div>
-                                        {% endif %}
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-
-                            <div class="mb-4">
-                                <span class="form-section-title d-block mb-2"><i class="fas fa-box-open me-2"></i>Itens</span>
-                                {{ formset.management_form }}
-                                <div class="table-responsive">
-                                    <table class="table align-middle">
-                                        <thead>
-                                            <tr>
-                                                <th>Produto</th>
-                                                <th class="text-center">Qtde</th>
-                                                <th class="text-center">Preço</th>
-                                                <th class="text-center">Desconto</th>
-                                                <th class="text-center">Total</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for item_form in formset %}
-                                            <tr>
-                                                {% for field in item_form.visible_fields %}
-                                                <td class="{% if field.name == 'quantidade' or field.name == 'preco_unitario' or field.name == 'desconto_item' or field.name == 'valor_total' %}text-center{% endif %}">
-                                                    {{ field }}
-                                                    {% if field.errors %}
-                                                        <div class="text-danger small">{{ field.errors.0 }}</div>
-                                                    {% endif %}
-                                                </td>
-                                                {% endfor %}
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div class="d-flex justify-content-end gap-2">
-                                <a class="btn btn-outline-secondary" href="{% url 'sistemaVendas:venda_home' %}">
-                                    <i class="fas fa-undo me-1"></i>Cancelar
-                                </a>
-                                <button class="btn btn-success" type="submit">
-                                    <i class="fas fa-save me-1"></i>Salvar Venda
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+            <div class="hero-actions">
+                {% if venda %}
+                <div class="hero-meta">
+                    <span class="meta-label">Número da venda</span>
+                    <strong>{{ venda.numero_venda }}</strong>
                 </div>
+                {% endif %}
+                <a href="{% url 'sistemaVendas:home' %}" class="btn btn-outline">Voltar para painel</a>
             </div>
+        </header>
 
-            <div class="col-12 col-lg-6">
-                <div class="card h-100">
-                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Vendas Registradas</h5>
-                        <span class="badge bg-primary-subtle text-primary fw-normal">CRUD - Read / Update / Delete</span>
+        {% if form.non_field_errors %}
+        <div class="form-alert">
+            <strong>Verifique os dados do formulário:</strong>
+            <ul>
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if formset.non_form_errors %}
+        <div class="form-alert">
+            <strong>Itens da venda:</strong>
+            <ul>
+                {% for error in formset.non_form_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="venda-grid">
+            <section class="venda-card">
+                <form method="post" class="venda-form" novalidate>
+                    {% csrf_token %}
+                    <div class="card-section">
+                        <div class="section-heading">
+                            <h2>Dados gerais</h2>
+                            <p>Selecione os responsáveis e ajuste observações relevantes da negociação.</p>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label for="{{ form.cliente.id_for_label }}">Cliente <span>*</span></label>
+                                {{ form.cliente }}
+                                {% if form.cliente.errors %}
+                                <div class="field-error">{{ form.cliente.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.funcionario.id_for_label }}">Vendedor <span>*</span></label>
+                                {{ form.funcionario }}
+                                {% if form.funcionario.errors %}
+                                <div class="field-error">{{ form.funcionario.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.forma_pagamento.id_for_label }}">Forma de pagamento <span>*</span></label>
+                                {{ form.forma_pagamento }}
+                                {% if form.forma_pagamento.errors %}
+                                <div class="field-error">{{ form.forma_pagamento.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.status.id_for_label }}">Status <span>*</span></label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                <div class="field-error">{{ form.status.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-field" data-span="full">
+                                <label for="{{ form.observacoes.id_for_label }}">Observações</label>
+                                {{ form.observacoes }}
+                                {% if form.observacoes.errors %}
+                                <div class="field-error">{{ form.observacoes.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        {% if vendas %}
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
+
+                    <div class="card-section">
+                        <div class="section-heading section-heading--with-action">
+                            <div class="section-heading__info">
+                                <h2>Itens da venda</h2>
+                                <p>Inclua produtos, quantidades, descontos e acompanhe os totais automaticamente.</p>
+                            </div>
+                            <button type="button" class="btn btn-tonal" data-add-item>Adicionar produto</button>
+                        </div>
+
+                        <div class="items-table">
+                            {{ formset.management_form }}
+                            <table>
                                 <thead>
                                     <tr>
-                                        <th>Número</th>
-                                        <th>Cliente</th>
-                                        <th>Status</th>
-                                        <th class="text-end">Total</th>
-                                        <th class="text-center">Ações</th>
+                                        <th>Produto</th>
+                                        <th>Quantidade</th>
+                                        <th>Preço unitário</th>
+                                        <th>Desconto (%)</th>
+                                        <th>Total</th>
+                                        <th>Ações</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    {% for venda in vendas %}
+                                <tbody data-items-container>
+                                    {% for item_form in formset.forms %}
+                                    <tr class="item-row" data-form-index="{{ forloop.counter0 }}">
+                                        {% for hidden in item_form.hidden_fields %}
+                                            {{ hidden }}
+                                        {% endfor %}
+                                        <td>
+                                            <div class="field-wrapper">
+                                                {{ item_form.produto }}
+                                                <small class="field-hint" data-stock-hint>Selecione um produto</small>
+                                                {% if item_form.produto.errors %}
+                                                <div class="field-error">{{ item_form.produto.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="field-wrapper">
+                                                {{ item_form.quantidade }}
+                                                {% if item_form.quantidade.errors %}
+                                                <div class="field-error">{{ item_form.quantidade.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="field-wrapper">
+                                                {{ item_form.preco_unitario }}
+                                                {% if item_form.preco_unitario.errors %}
+                                                <div class="field-error">{{ item_form.preco_unitario.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="field-wrapper field-with-suffix">
+                                                {{ item_form.desconto_item }}
+                                                <span class="input-suffix">%</span>
+                                                {% if item_form.desconto_item.errors %}
+                                                <div class="field-error">{{ item_form.desconto_item.errors.0 }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="line-total" data-total>R$ 0,00</span>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="icon-button" data-remove-item>Remover</button>
+                                        </td>
+                                    </tr>
+                                    {% if item_form.non_field_errors %}
                                     <tr>
-                                        <td>
-                                            <span class="fw-semibold">{{ venda.numero_venda }}</span>
-                                            <small class="d-block text-muted">{{ venda.data_venda|date:"d/m/Y H:i" }}</small>
-                                        </td>
-                                        <td>
-                                            <span class="fw-semibold">{{ venda.cliente.nome }}</span>
-                                            <small class="d-block text-muted">{{ venda.funcionario.nome }}</small>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-light text-dark">{{ venda.get_status_display }}</span>
-                                        </td>
-                                        <td class="text-end">
-                                            R$ {{ venda.valor_total|default:"0,00" }}
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="action-buttons d-flex justify-content-center gap-1">
-                                                <a class="btn btn-sm btn-outline-primary" href="{% url 'sistemaVendas:venda_detalhes' venda.id %}">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a class="btn btn-sm btn-outline-success" href="{% url 'sistemaVendas:venda_editar' venda.id %}">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a class="btn btn-sm btn-outline-warning" href="{% url 'sistemaVendas:venda_cancelar' venda.id %}">
-                                                    <i class="fas fa-ban"></i>
-                                                </a>
-                                                <form method="post" action="{% url 'sistemaVendas:venda_deletar' venda.id %}" onsubmit="return confirm('Confirma a exclusão da venda {{ venda.numero_venda }}?');">
-                                                    {% csrf_token %}
-                                                    <button class="btn btn-sm btn-outline-danger" type="submit">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </form>
+                                        <td colspan="6">
+                                            <div class="field-error">
+                                                {% for error in item_form.non_field_errors %}
+                                                    <div>{{ error }}</div>
+                                                {% endfor %}
                                             </div>
                                         </td>
                                     </tr>
+                                    {% endif %}
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
-                        {% else %}
-                        <div class="alert alert-info d-flex align-items-center gap-2" role="alert">
-                            <i class="fas fa-info-circle fa-lg"></i>
-                            <div>Nenhuma venda foi registrada até o momento. Utilize o formulário ao lado para criar a primeira venda.</div>
-                        </div>
-                        {% endif %}
+                        <template id="empty-form-template">
+                            <tr class="item-row" data-form-index="__prefix__">
+                                {% with empty_form=formset.empty_form %}
+                                    {% for hidden in empty_form.hidden_fields %}
+                                        {{ hidden }}
+                                    {% endfor %}
+                                    <td>
+                                        <div class="field-wrapper">
+                                            {{ empty_form.produto }}
+                                            <small class="field-hint" data-stock-hint>Selecione um produto</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="field-wrapper">
+                                            {{ empty_form.quantidade }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="field-wrapper">
+                                            {{ empty_form.preco_unitario }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="field-wrapper field-with-suffix">
+                                            {{ empty_form.desconto_item }}
+                                            <span class="input-suffix">%</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="line-total" data-total>R$ 0,00</span>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="icon-button" data-remove-item>Remover</button>
+                                    </td>
+                                {% endwith %}
+                            </tr>
+                        </template>
                     </div>
-                </div>
-            </div>
+
+                    <div class="totals-section card-section">
+                        <h2>Resumo financeiro</h2>
+                        <div class="totals-grid">
+                            <div class="total-line">
+                                <span>Subtotal</span>
+                                <strong data-summary-subtotal>R$ 0,00</strong>
+                            </div>
+                            <div class="total-line">
+                                <span>Desconto geral (%)</span>
+                                <div class="discount-control">
+                                    <div class="field-with-suffix" style="width: 160px;">
+                                        {{ form.desconto }}
+                                        <span class="input-suffix">%</span>
+                                    </div>
+                                    <small class="discount-value" data-summary-discount>- R$ 0,00</small>
+                                    {% if form.desconto.errors %}
+                                    <div class="field-error">{{ form.desconto.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="total-line total-line--grand">
+                                <span>Total da venda</span>
+                                <strong data-summary-total>R$ 0,00</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{% url 'sistemaVendas:home' %}" class="btn btn-outline dark">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            {% if venda %}Salvar alterações{% else %}Finalizar venda{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </section>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function() {
+            const itemsContainer = document.querySelector('[data-items-container]');
+            if (!itemsContainer) {
+                return;
+            }
+
+            const totalFormsInput = document.querySelector('input[name$="-TOTAL_FORMS"]');
+            const emptyFormTemplate = document.querySelector('#empty-form-template');
+            const addItemButton = document.querySelector('[data-add-item]');
+            const discountInput = document.querySelector('#id_desconto');
+            const subtotalDisplay = document.querySelector('[data-summary-subtotal]');
+            const totalDisplay = document.querySelector('[data-summary-total]');
+            const discountValueDisplay = document.querySelector('[data-summary-discount]');
+            const currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+            const produtosLookup = {};
+            try {
+                const dadosProdutos = JSON.parse('{{ produtos_json|default:"[]"|escapejs }}');
+                dadosProdutos.forEach((produto) => {
+                    produtosLookup[String(produto.id)] = produto;
+                });
+            } catch (err) {
+                console.warn('Não foi possível carregar os dados de produtos para precificação automática.', err);
+            }
+
+            function parseNumber(value) {
+                if (value === null || value === undefined) {
+                    return 0;
+                }
+                if (typeof value === 'number') {
+                    return value;
+                }
+                const raw = value.toString().trim();
+                if (raw === '') {
+                    return 0;
+                }
+                const usesCommaAsDecimal = raw.includes(',');
+                let normalized = raw.replace(/\s+/g, '');
+
+                if (usesCommaAsDecimal) {
+                    normalized = normalized
+                        .replace(/[^0-9,\-\.]/g, '')
+                        .replace(/\./g, '')
+                        .replace(',', '.');
+                } else {
+                    normalized = normalized.replace(/[^0-9.\-]/g, '');
+                }
+
+                const parsed = parseFloat(normalized);
+                return Number.isNaN(parsed) ? 0 : parsed;
+            }
+
+            function formatCurrency(value) {
+                return currencyFormatter.format(value || 0);
+            }
+
+            function refreshStockHint(row) {
+                const productSelect = row.querySelector('select[name$="-produto"]');
+                const hint = row.querySelector('[data-stock-hint]');
+                if (!productSelect || !hint) {
+                    return;
+                }
+                const produto = produtosLookup[productSelect.value];
+                if (produto) {
+                    const estoque = parseNumber(produto.estoque_atual);
+                    const unidade = produto.unidade_medida || '';
+                    hint.textContent = `Estoque: ${estoque.toLocaleString('pt-BR')} ${unidade}`;
+                } else {
+                    hint.textContent = 'Selecione um produto';
+                }
+            }
+
+            function getLineTotal(row) {
+                if (row.dataset.removed === 'true') {
+                    return 0;
+                }
+                const quantidadeInput = row.querySelector('input[name$="-quantidade"]');
+                const precoInput = row.querySelector('input[name$="-preco_unitario"]');
+                const descontoItemInput = row.querySelector('input[name$="-desconto_item"]');
+                const lineTotalDisplay = row.querySelector('[data-total]');
+
+                const quantidade = parseNumber(quantidadeInput ? quantidadeInput.value : 0);
+                const preco = parseNumber(precoInput ? precoInput.value : 0);
+                let descontoItem = parseNumber(descontoItemInput ? descontoItemInput.value : 0);
+                descontoItem = Math.min(Math.max(descontoItem, 0), 100);
+
+                const fatorPerc = (100 - descontoItem) / 100;
+                const precoComDesconto = preco * fatorPerc;
+                const total = Math.max(precoComDesconto * quantidade, 0);
+                if (lineTotalDisplay) {
+                    lineTotalDisplay.textContent = formatCurrency(total);
+                }
+                return total;
+            }
+
+            function updateSummary() {
+                const rows = Array.from(itemsContainer.querySelectorAll('.item-row'));
+                const subtotal = rows.reduce((acc, row) => acc + getLineTotal(row), 0);
+                let descontoPercent = parseNumber(discountInput ? discountInput.value : 0);
+                descontoPercent = Math.min(Math.max(descontoPercent, 0), 100);
+                const descontoValor = subtotal * (descontoPercent / 100);
+                const total = Math.max(subtotal - descontoValor, 0);
+
+                if (subtotalDisplay) {
+                    subtotalDisplay.textContent = formatCurrency(subtotal);
+                }
+                if (discountValueDisplay) {
+                    discountValueDisplay.textContent = `- ${formatCurrency(descontoValor)}`;
+                }
+                if (totalDisplay) {
+                    totalDisplay.textContent = formatCurrency(total);
+                }
+            }
+
+            function onProductChange(event) {
+                const select = event.target;
+                const row = select.closest('.item-row');
+                const produtoInfo = produtosLookup[select.value];
+                const precoInput = row.querySelector('input[name$="-preco_unitario"]');
+                if (precoInput) {
+                    if (produtoInfo) {
+                        precoInput.value = produtoInfo.preco_venda;
+                    } else {
+                        precoInput.value = '';
+                    }
+                }
+                refreshStockHint(row);
+                updateSummary();
+            }
+
+            function markRowAsDeleted(row) {
+                const deleteInput = row.querySelector('input[name$="-DELETE"]');
+                if (deleteInput) {
+                    if ('checked' in deleteInput) {
+                        deleteInput.checked = true;
+                    }
+                    deleteInput.value = 'on';
+                }
+                row.dataset.removed = 'true';
+                row.classList.add('item-row--hidden');
+                const idInput = row.querySelector('input[name$="-id"]');
+                row.querySelectorAll('select, input').forEach((field) => {
+                    if (!field.name) return;
+                    if (idInput && field === idInput) return;
+                    if (field.name.endsWith('-DELETE')) return;
+                    field.value = '';
+                });
+                row.style.display = 'none';
+                updateSummary();
+            }
+
+            function attachRowBehavior(row) {
+                const productSelect = row.querySelector('select[name$="-produto"]');
+                const quantidadeInput = row.querySelector('input[name$="-quantidade"]');
+                const precoInput = row.querySelector('input[name$="-preco_unitario"]');
+                const descontoItemInput = row.querySelector('input[name$="-desconto_item"]');
+                const removeButton = row.querySelector('[data-remove-item]');
+                const deleteInput = row.querySelector('input[name$="-DELETE"]');
+                if (deleteInput) {
+                    deleteInput.value = '';
+                }
+
+                if (productSelect) {
+                    productSelect.addEventListener('change', onProductChange);
+                    refreshStockHint(row);
+                }
+                [quantidadeInput, precoInput, descontoItemInput].forEach((input) => {
+                    if (!input) return;
+                    input.addEventListener('input', () => {
+                        getLineTotal(row);
+                        updateSummary();
+                    });
+                });
+                if (precoInput) {
+                    precoInput.setAttribute('readonly', 'readonly');
+                }
+                if (removeButton) {
+                    removeButton.addEventListener('click', () => {
+                        markRowAsDeleted(row);
+                    });
+                }
+                getLineTotal(row);
+            }
+
+            Array.from(itemsContainer.querySelectorAll('.item-row')).forEach(attachRowBehavior);
+            updateSummary();
+
+            if (discountInput) {
+                discountInput.addEventListener('input', updateSummary);
+            }
+
+            if (addItemButton) {
+                addItemButton.addEventListener('click', () => {
+                    if (!emptyFormTemplate || !totalFormsInput) {
+                        return;
+                    }
+                    const totalForms = parseInt(totalFormsInput.value || '0', 10);
+                    const html = emptyFormTemplate.innerHTML.replace(/__prefix__/g, totalForms);
+                    const tempWrapper = document.createElement('tbody');
+                    tempWrapper.innerHTML = html.trim();
+                    const newRow = tempWrapper.querySelector('.item-row');
+                    if (!newRow) return;
+                    totalFormsInput.value = totalForms + 1;
+                    itemsContainer.appendChild(newRow);
+                    attachRowBehavior(newRow);
+                    updateSummary();
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
