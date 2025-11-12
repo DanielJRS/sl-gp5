@@ -1,3 +1,6 @@
+import json
+from decimal import Decimal
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -20,6 +23,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth import logout as auth_logout
 from django.contrib import messages
+from django.core.serializers.json import DjangoJSONEncoder
 
 def loginForm(request):
     next_url = request.POST.get('next') or request.GET.get('next') or ''
@@ -52,7 +56,7 @@ def _montar_contexto_dashboard():
 
     vendas_mes = VendaModel.objects.filter(
         data_venda__gte=inicio_mes,
-        status__in=['CONFIRMADA', 'FINALIZADA']
+        status__in=['CONFIRMADA']
     )
     total_vendas_mes = vendas_mes.aggregate(total=Sum('valor_total'))['total'] or 0
     qtd_vendas_mes = vendas_mes.count()
@@ -60,7 +64,7 @@ def _montar_contexto_dashboard():
     vendas_mes_anterior = VendaModel.objects.filter(
         data_venda__gte=mes_anterior,
         data_venda__lt=inicio_mes,
-        status__in=['CONFIRMADA', 'FINALIZADA']
+        status__in=['CONFIRMADA']
     )
     total_vendas_mes_anterior = vendas_mes_anterior.aggregate(total=Sum('valor_total'))['total'] or 0
 
@@ -312,16 +316,22 @@ def produto_detalhes(request, produto_id):
     contexto = {'produto': produto}
     return render(request, 'templatesProduto/detalhesProduto.html', contexto)
 
-
-@login_required
-def venda_home(request):
-    contexto = _montar_contexto_dashboard()
-    return render(request, 'home.html', contexto)
-
-
 @login_required
 @transaction.atomic
 def venda_add(request):
+    produtos_queryset = ProdutoModel.objects.filter(ativo=True).values(
+        'id',
+        'nome',
+        'preco_venda',
+        'estoque_atual',
+        'unidade_medida'
+    )
+    produtos_json = json.dumps(list(produtos_queryset), cls=DjangoJSONEncoder)
+    vendas = VendaModel.objects.select_related(
+        'cliente',
+        'funcionario'
+    ).order_by('-data_venda')[:8]
+
     if request.method == 'POST':
         form = VendaForm(request.POST)
         formset = ItemVendaFormSet(request.POST)
@@ -345,8 +355,10 @@ def venda_add(request):
     contexto = {
         'form': form,
         'formset': formset,
+        'produtos_json': produtos_json,
+        'vendas': vendas,
     }
-    return render(request, 'templateVenda/AdicionarVenda.html', contexto)
+    return render(request, 'templateVenda/efetuarVenda.html', contexto)
 
 
 @login_required
@@ -354,12 +366,36 @@ def venda_detalhes(request, venda_id):
     """Página para visualizar detalhes completos da venda"""
     venda = get_object_or_404(VendaModel, id=venda_id)
     itens = venda.itens.all()
+    desconto_percentual = Decimal(venda.desconto or 0)
+    desconto_total_reais = (venda.subtotal or Decimal('0')) * (desconto_percentual / Decimal('100'))
     
     contexto = {
         'venda': venda,
         'itens': itens,
+        'desconto_total_reais': desconto_total_reais,
     }
     return render(request, 'templateVenda/detalhesVenda.html', contexto)
+
+
+@login_required
+def venda_listar(request):
+    """Lista todas as vendas para consulta administrativa"""
+    status_filtro = request.GET.get('status', '').upper()
+    vendas_queryset = VendaModel.objects.select_related('cliente', 'funcionario').order_by('-data_venda')
+
+    if status_filtro:
+        vendas_queryset = vendas_queryset.filter(status=status_filtro)
+
+    total_valor = vendas_queryset.aggregate(total=Sum('valor_total'))['total'] or Decimal('0')
+
+    contexto = {
+        'vendas': vendas_queryset,
+        'status_choices': VendaModel.STATUS_CHOICES,
+        'status_filtro': status_filtro,
+        'total_vendas': vendas_queryset.count(),
+        'total_valor': total_valor,
+    }
+    return render(request, 'templateVenda/listarVendas.html', contexto)
 
 
 @login_required
@@ -367,9 +403,21 @@ def venda_detalhes(request, venda_id):
 def venda_editar(request, venda_id):
     """Página para editar uma venda existente"""
     venda = get_object_or_404(VendaModel, id=venda_id)
+    produtos_queryset = ProdutoModel.objects.filter(ativo=True).values(
+        'id',
+        'nome',
+        'preco_venda',
+        'estoque_atual',
+        'unidade_medida'
+    )
+    produtos_json = json.dumps(list(produtos_queryset), cls=DjangoJSONEncoder)
+    vendas = VendaModel.objects.select_related(
+        'cliente',
+        'funcionario'
+    ).order_by('-data_venda')[:8]
     
-    if venda.status in ['CANCELADA', 'FINALIZADA']:
-        messages.error(request, 'Não é possível editar uma venda cancelada ou finalizada.')
+    if venda.status == 'CANCELADA':
+        messages.error(request, 'Não é possível editar uma venda cancelada.')
         return redirect('sistemaVendas:venda_detalhes', venda_id=venda.id)
     
     for item in venda.itens.all():
@@ -400,8 +448,10 @@ def venda_editar(request, venda_id):
         'form': form,
         'formset': formset,
         'venda': venda,
+        'produtos_json': produtos_json,
+        'vendas': vendas,
     }
-    return render(request, 'templateVenda/AdicionarVenda.html', contexto)
+    return render(request, 'templateVenda/efetuarVenda.html', contexto)
 
 
 @login_required
@@ -432,23 +482,23 @@ def venda_cancelar(request, venda_id):
 
 @login_required
 def venda_deletar(request, venda_id):
-    """Deleta uma venda (apenas orçamentos)"""
+    """Deleta uma venda enquanto estiver pendente"""
     venda = get_object_or_404(VendaModel, id=venda_id)
     
-    if venda.status != 'ORCAMENTO':
-        messages.error(request, 'Apenas orçamentos podem ser deletados. Use o cancelamento para outras vendas.')
+    if venda.status != 'PENDENTE':
+        messages.error(request, 'Apenas vendas pendentes podem ser deletadas. Use o cancelamento para outras situações.')
         return redirect('sistemaVendas:venda_detalhes', venda_id=venda.id)
     
     venda.delete()
-    messages.success(request, 'Orçamento deletado com sucesso!')
+    messages.success(request, 'Registro excluído com sucesso!')
     return redirect('sistemaVendas:venda_home')
 
 
-@login_required
 def logout_view(request):
     if request.method == 'POST':
-        auth_logout(request)
-        messages.success(request, 'Você saiu do sistema com sucesso!')
-        return redirect('sistemaVendas:loginForm')
-    return render(request, 'logout_confirm.html')
+        if request.user.is_authenticated:
+            auth_logout(request)
+            messages.success(request, 'Você saiu do sistema com sucesso!')
+        return redirect('sistemaVendas:login')
+    return render(request, 'login.html')
 

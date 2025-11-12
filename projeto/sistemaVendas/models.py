@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
@@ -233,11 +234,9 @@ from django.utils import timezone
 
 class VendaModel(models.Model):
     STATUS_CHOICES = [
-        ('ORCAMENTO', 'Orçamento'),
         ('PENDENTE', 'Pendente'),
         ('CONFIRMADA', 'Confirmada'),
         ('CANCELADA', 'Cancelada'),
-        ('FINALIZADA', 'Finalizada'),
     ]
     
     FORMA_PAGAMENTO_CHOICES = [
@@ -245,7 +244,6 @@ class VendaModel(models.Model):
         ('CARTAO_CREDITO', 'Cartão de Crédito'),
         ('CARTAO_DEBITO', 'Cartão de Débito'),
         ('PIX', 'PIX'),
-        ('BOLETO', 'Boleto'),
         ('TRANSFERENCIA', 'Transferência Bancária'),
         ('CHEQUE', 'Cheque'),
         ('CREDIARIO', 'Crediário'),
@@ -286,7 +284,11 @@ class VendaModel(models.Model):
                 novo_numero = 1
             self.numero_venda = f"VND-{novo_numero:06d}"
         
-        self.valor_total = self.subtotal - self.desconto
+        desconto_percentual = Decimal(self.desconto or 0)
+        desconto_percentual = min(max(desconto_percentual, Decimal('0')), Decimal('100'))
+        fator_percentual = (Decimal('100') - desconto_percentual) / Decimal('100')
+        fator_percentual = max(fator_percentual, Decimal('0'))
+        self.valor_total = (self.subtotal or Decimal('0')) * fator_percentual
         
         super().save(*args, **kwargs)
     
@@ -294,12 +296,16 @@ class VendaModel(models.Model):
         """Calcula o subtotal baseado nos itens da venda"""
         itens = self.itens.all()
         self.subtotal = sum(item.valor_total for item in itens)
-        self.valor_total = self.subtotal - self.desconto
+        desconto_percentual = Decimal(self.desconto or 0)
+        desconto_percentual = min(max(desconto_percentual, Decimal('0')), Decimal('100'))
+        fator_percentual = (Decimal('100') - desconto_percentual) / Decimal('100')
+        fator_percentual = max(fator_percentual, Decimal('0'))
+        self.valor_total = self.subtotal * fator_percentual
         self.save()
     
     def pode_cancelar(self):
         """Verifica se a venda pode ser cancelada"""
-        return self.status in ['ORCAMENTO', 'PENDENTE']
+        return self.status == 'PENDENTE'
     
     class Meta:
         verbose_name = "Venda"
@@ -337,7 +343,14 @@ class ItemVendaModel(models.Model):
         if not self.preco_unitario:
             self.preco_unitario = self.produto.preco_venda
         
-        self.valor_total = (self.quantidade * self.preco_unitario) - self.desconto_item
+        quantidade = Decimal(self.quantidade or 0)
+        preco_unitario = Decimal(self.preco_unitario or 0)
+        desconto_percentual = Decimal(self.desconto_item or 0)
+        desconto_percentual = min(max(desconto_percentual, Decimal('0')), Decimal('100'))
+        fator_percentual = (Decimal('100') - desconto_percentual) / Decimal('100')
+        fator_percentual = max(fator_percentual, Decimal('0'))
+        preco_liquido = preco_unitario * fator_percentual
+        self.valor_total = quantidade * preco_liquido
         
         super().save(*args, **kwargs)
         

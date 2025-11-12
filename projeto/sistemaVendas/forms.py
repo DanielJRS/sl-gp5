@@ -5,6 +5,7 @@ from .models import funcionarioModel
 from .models import FornecedorModel
 from .models import VendaModel, ItemVendaModel
 from django.forms import inlineformset_factory
+from .models import VendaModel, ItemVendaModel
 
 
 class CustomLoginForm(AuthenticationForm):
@@ -323,7 +324,7 @@ class VendaForm(forms.ModelForm):
             'cliente': forms.Select(attrs={'class': 'form-control'}),
             'funcionario': forms.Select(attrs={'class': 'form-control'}),
             'forma_pagamento': forms.Select(attrs={'class': 'form-control'}),
-            'desconto': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'value': '0'}),
+            'desconto': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'value': '0', 'min': '0', 'max': '100'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
@@ -331,11 +332,10 @@ class VendaForm(forms.ModelForm):
             'cliente': 'Cliente',
             'funcionario': 'Vendedor',
             'forma_pagamento': 'Forma de Pagamento',
-            'desconto': 'Desconto (R$)',
+            'desconto': 'Desconto (%)',
             'status': 'Status da Venda',
             'observacoes': 'Observações',
         }
-
 
 class ItemVendaForm(forms.ModelForm):
     class Meta:
@@ -345,19 +345,27 @@ class ItemVendaForm(forms.ModelForm):
             'produto': forms.Select(attrs={'class': 'form-control'}),
             'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0.01'}),
             'preco_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'readonly': 'readonly'}),
-            'desconto_item': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'value': '0'}),
+            'desconto_item': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'value': '0', 'min': '0', 'max': '100'}),
         }
         labels = {
             'produto': 'Produto',
             'quantidade': 'Quantidade',
             'preco_unitario': 'Preço Unitário (R$)',
-            'desconto_item': 'Desconto no Item (R$)',
+            'desconto_item': 'Desconto no Item (%)',
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'DELETE' in self.fields:
+            self.fields['DELETE'].widget = forms.HiddenInput(attrs={'data-delete-input': 'true'})
+            self.fields['DELETE'].initial = ''
+
 
 ItemVendaFormSet = inlineformset_factory(
     VendaModel,
     ItemVendaModel,
     form=ItemVendaForm,
+    fields=['produto', 'quantidade', 'preco_unitario', 'desconto_item'],
     extra=1,
     can_delete=True,
     min_num=1,
