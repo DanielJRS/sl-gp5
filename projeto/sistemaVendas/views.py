@@ -5,17 +5,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils.http import url_has_allowed_host_and_scheme
-from .forms import CustomLoginForm, ClienteForm, FuncionarioForm
+from .forms import CustomLoginForm, ClienteForm, FuncionarioForm, FornecedorForm, ProdutoForm,  VendaForm, ItemVendaForm, ItemVendaFormSet
 from django.http import HttpRequest
 from django import forms
-from .models import models,ClienteModel, funcionarioModel
-from .forms import FornecedorForm
-from .models import FornecedorModel
-from .forms import ProdutoForm
-from .models import ProdutoModel
+from .models import models,ClienteModel, funcionarioModel, FornecedorModel, ProdutoModel, VendaModel, ItemVendaModel
 from django.db import models
-from .forms import VendaForm, ItemVendaForm, ItemVendaFormSet
-from .models import VendaModel, ItemVendaModel
 from django.db import transaction
 from django.contrib import messages
 from django.db.models import Sum, Count, Q, F
@@ -24,6 +18,7 @@ from datetime import timedelta
 from django.contrib.auth import logout as auth_logout
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Q
 
 def loginForm(request):
     next_url = request.POST.get('next') or request.GET.get('next') or ''
@@ -41,7 +36,6 @@ def loginForm(request):
     return render(request, 'login.html', {'form': form, 'next': next_url})
 
 def _montar_contexto_dashboard():
-    """Monta os dados exibidos no painel principal/home."""
     hoje = timezone.now()
     inicio_mes = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
@@ -128,16 +122,22 @@ def cliente_add(request):
 
 @login_required
 def cliente_home(request):
-    clientes = ClienteModel.objects.all().order_by('nome')
+    query = request.GET.get('q', '').strip()
+    
+    if query:
+        clientes = ClienteModel.objects.filter(nome__icontains=query).order_by('nome')
+    else:
+        clientes = ClienteModel.objects.all().order_by('nome')
+    
     contexto = {
         'clientes': clientes,
-        'total_clientes': clientes.count()
+        'total_clientes': clientes.count(),
+        'query': query
     }
     return render(request, 'templateCliente/homeCliente.html', contexto)
 
 @login_required
 def cliente_editar(request, cliente_id):
-    """Página para editar um cliente existente"""
     cliente = get_object_or_404(ClienteModel, id=cliente_id)
     if request.method == 'POST':
         formulario = ClienteForm(request.POST, instance=cliente)
@@ -159,13 +159,33 @@ def cliente_deletar(request, cliente_id):
 
 @login_required
 def funcionario_home(request):
-    funcionarios = funcionarioModel.objects.all().order_by('nome')
+    query = request.GET.get('q', '').strip()
+    if query:
+        funcionarios = funcionarioModel.objects.filter(nome__icontains=query).order_by('nome')
+    else:
+        funcionarios = funcionarioModel.objects.all().order_by('nome')
     contexto = {
-        'funcionarios': funcionarios,  
-        'total_funcionarios': funcionarios.count()
+        'funcionarios': funcionarios,
+        'total_funcionarios': funcionarios.count(),
+        'query': query
     }
     return render(request, 'templatesFuncionario/homeFuncionario.html', contexto)
 
+# @login_required
+# def cliente_home(request):
+#     query = request.GET.get('q', '').strip()
+    
+#     if query:
+#         clientes = ClienteModel.objects.filter(nome__icontains=query).order_by('nome')
+#     else:
+#         clientes = ClienteModel.objects.all().order_by('nome')
+    
+#     contexto = {
+#         'clientes': clientes,
+#         'total_clientes': clientes.count(),
+#         'query': query
+#     }
+#     return render(request, 'templateCliente/homeCliente.html', contexto)
 
 @login_required
 def funcionario_add(request):
@@ -183,7 +203,6 @@ def funcionario_add(request):
 
 @login_required
 def funcionario_editar(request, funcionario_id):
-    """Página para editar um funcionário existente"""
     funcionario = get_object_or_404(funcionarioModel, id=funcionario_id)
     if request.method == 'POST':
         formulario = FuncionarioForm(request.POST, instance=funcionario)
@@ -205,10 +224,16 @@ def funcionario_deletar(request, funcionario_id):
 
 @login_required
 def fornecedor_home(request):
-    fornecedores = FornecedorModel.objects.all().order_by('razao_social')
+    query = request.GET.get('q', '').strip()
+
+    if query:
+        fornecedores = FornecedorModel.objects.filter(nome__icontains=query).order_by('nome')
+    else:
+        fornecedores = FornecedorModel.objects.all().order_by('nome')
     contexto = {
-        'fornecedores': fornecedores,  
-        'total_fornecedores': fornecedores.count()
+        'fornecedores': fornecedores,
+        'total_fornecedores': fornecedores.count(),
+        'query': query
     }
     return render(request, 'templatesFornecedor/homeFornecedor.html', contexto)
 
@@ -229,7 +254,6 @@ def fornecedor_add(request):
 
 @login_required
 def fornecedor_editar(request, fornecedor_id):
-    """Página para editar um fornecedor existente"""
     fornecedor = get_object_or_404(FornecedorModel, id=fornecedor_id)
     if request.method == 'POST':
         formulario = FornecedorForm(request.POST, instance=fornecedor)
@@ -288,7 +312,6 @@ def produto_add(request):
 
 @login_required
 def produto_editar(request, produto_id):
-    """Página para editar um produto existente"""
     produto = get_object_or_404(ProdutoModel, id=produto_id)
     if request.method == 'POST':
         formulario = ProdutoForm(request.POST, instance=produto)
@@ -311,7 +334,6 @@ def produto_deletar(request, produto_id):
 
 @login_required
 def produto_detalhes(request, produto_id):
-    """Página para visualizar detalhes completos do produto"""
     produto = get_object_or_404(ProdutoModel, id=produto_id)
     contexto = {'produto': produto}
     return render(request, 'templatesProduto/detalhesProduto.html', contexto)
@@ -363,7 +385,6 @@ def venda_add(request):
 
 @login_required
 def venda_detalhes(request, venda_id):
-    """Página para visualizar detalhes completos da venda"""
     venda = get_object_or_404(VendaModel, id=venda_id)
     itens = venda.itens.all()
     desconto_percentual = Decimal(venda.desconto or 0)
@@ -379,7 +400,6 @@ def venda_detalhes(request, venda_id):
 
 @login_required
 def venda_listar(request):
-    """Lista todas as vendas para consulta administrativa"""
     status_filtro = request.GET.get('status', '').upper()
     vendas_queryset = VendaModel.objects.select_related('cliente', 'funcionario').order_by('-data_venda')
 
@@ -401,7 +421,6 @@ def venda_listar(request):
 @login_required
 @transaction.atomic
 def venda_editar(request, venda_id):
-    """Página para editar uma venda existente"""
     venda = get_object_or_404(VendaModel, id=venda_id)
     produtos_queryset = ProdutoModel.objects.filter(ativo=True).values(
         'id',
@@ -457,7 +476,6 @@ def venda_editar(request, venda_id):
 @login_required
 @transaction.atomic
 def venda_cancelar(request, venda_id):
-    """Cancela uma venda e devolve produtos ao estoque"""
     venda = get_object_or_404(VendaModel, id=venda_id)
     
     if not venda.pode_cancelar():
@@ -482,7 +500,6 @@ def venda_cancelar(request, venda_id):
 
 @login_required
 def venda_deletar(request, venda_id):
-    """Deleta uma venda enquanto estiver pendente"""
     venda = get_object_or_404(VendaModel, id=venda_id)
     
     if venda.status != 'PENDENTE':

@@ -76,7 +76,7 @@ WSGI_APPLICATION = 'projeto.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
+        'NAME': 'sistemavenda_refat',
         'USER': 'postgres',
         'PASSWORD': 'root',
         'HOST': 'localhost',

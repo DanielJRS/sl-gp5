@@ -360,29 +360,49 @@
 </style>
 
 <div class="home-funcionario">
-    <section class="header-card">
-        <div class="header-text">
-            <h2>Funcionários Cadastrados</h2>
-            <p>Gerencie os funcionários, visualize rapidamente contatos e abra detalhes completos quando necessário.</p>
-            <div class="header-meta">
-                <span class="meta-pill">{{ total_funcionarios }} funcionário{% if total_funcionarios|default:0 != 1 %}s{% endif %}</span>
-            </div>
+   <section class="header-card">
+    <div class="header-text">
+        <h2>Funcionários Cadastrados</h2>
+        <p>Gerencie os funcionários, visualize rapidamente contatos e abra detalhes completos quando necessário.</p>
+        <div class="header-meta">
+            <span class="meta-pill">{{ total_funcionarios }} funcionário{% if total_funcionarios|default:0 != 1 %}s{% endif %}</span>
+            {% if query %}
+            <span class="meta-pill" style="background-color: #dbeafe; color: #1e40af;">Pesquisando: "{{ query }}"</span>
+            {% endif %}
         </div>
-        <div class="header-actions">
-            <a href="{% url 'sistemaVendas:funcionario_adicionar' %}" class="btn btn-primary">
-                <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
-                </svg>
-                Novo Funcionário
-            </a>
-            <a href="{% url 'sistemaVendas:home' %}" class="btn btn-secondary">
-                <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-                Voltar
-            </a>
-        </div>
-    </section>
+    </div>
+    
+    <!-- Formulário de Pesquisa -->
+    <div style="display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0; max-width: 500px;">
+        <form method="GET" action="{% url 'sistemaVendas:funcionario_home' %}" style="display: flex; gap: 0.5rem; flex: 1;">
+            <input 
+                type="text" 
+                name="q" 
+                placeholder="Pesquisar por nome"
+                value="{{ query|default:'' }}"
+                style="flex: 1; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.95rem;">
+            <button type="submit" class="btn btn-primary" style="white-space: nowrap;">Buscar</button>
+            {% if query %}
+            <a href="{% url 'sistemaVendas:funcionario_home' %}" class="btn btn-secondary">Limpar</a>
+            {% endif %}
+        </form>
+    </div>
+    
+    <div class="header-actions">
+        <a href="{% url 'sistemaVendas:funcionario_adicionar' %}" class="btn btn-primary">
+            <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+            </svg>
+            Novo Funcionário
+        </a>
+        <a href="{% url 'sistemaVendas:home' %}" class="btn btn-secondary">
+            <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+            Voltar
+        </a>
+    </div>
+</section>
 
     {% if funcionarios %}
     <div class="employees-wrapper">
