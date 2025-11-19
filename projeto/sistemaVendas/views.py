@@ -171,21 +171,6 @@ def funcionario_home(request):
     }
     return render(request, 'templatesFuncionario/homeFuncionario.html', contexto)
 
-# @login_required
-# def cliente_home(request):
-#     query = request.GET.get('q', '').strip()
-    
-#     if query:
-#         clientes = ClienteModel.objects.filter(nome__icontains=query).order_by('nome')
-#     else:
-#         clientes = ClienteModel.objects.all().order_by('nome')
-    
-#     contexto = {
-#         'clientes': clientes,
-#         'total_clientes': clientes.count(),
-#         'query': query
-#     }
-#     return render(request, 'templateCliente/homeCliente.html', contexto)
 
 @login_required
 def funcionario_add(request):
@@ -227,9 +212,13 @@ def fornecedor_home(request):
     query = request.GET.get('q', '').strip()
 
     if query:
-        fornecedores = FornecedorModel.objects.filter(nome__icontains=query).order_by('nome')
+        fornecedores = FornecedorModel.objects.filter(
+            Q(razao_social__icontains=query) | 
+            Q(nome_fantasia__icontains=query)
+        ).order_by('razao_social')
     else:
-        fornecedores = FornecedorModel.objects.all().order_by('nome')
+        fornecedores = FornecedorModel.objects.all().order_by('razao_social')
+    
     contexto = {
         'fornecedores': fornecedores,
         'total_fornecedores': fornecedores.count(),

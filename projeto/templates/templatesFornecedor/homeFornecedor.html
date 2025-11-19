@@ -21,11 +21,17 @@
         border: 1px solid #f0f0f0;
         padding: 24px 28px;
         display: flex;
+        flex-direction: column;
+        gap: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .home-fornecedor .header-top {
+        display: flex;
         flex-wrap: wrap;
         gap: 24px;
         justify-content: space-between;
         align-items: flex-start;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .home-fornecedor .header-text h2 {
@@ -59,10 +65,48 @@
         text-transform: uppercase;
     }
 
+    .home-fornecedor .meta-pill.search-pill {
+        background: rgba(59, 130, 246, 0.12);
+        color: #1e40af;
+    }
+
+    .home-fornecedor .search-container {
+        width: 100%;
+        max-width: 400px;
+        margin-left: auto;
+    }
+
+    .home-fornecedor .search-form {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .home-fornecedor .search-input {
+        flex: 1;
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: all 0.2s ease;
+    }
+
+    .home-fornecedor .search-input:focus {
+        outline: none;
+        border-color: #44b78b;
+        box-shadow: 0 0 0 3px rgba(68, 183, 139, 0.1);
+    }
+
+    .home-fornecedor .search-input::placeholder {
+        color: #9ca3af;
+    }
+
     .home-fornecedor .header-actions {
         display: flex;
         gap: 12px;
         flex-wrap: wrap;
+        width: 100%;
     }
 
     .home-fornecedor .btn {
@@ -79,6 +123,7 @@
         color: #495057;
         text-decoration: none;
         transition: all 0.2s ease;
+        white-space: nowrap;
     }
 
     .home-fornecedor .btn svg {
@@ -340,6 +385,23 @@
             padding: 24px 18px;
         }
 
+        .home-fornecedor .header-top {
+            flex-direction: column;
+        }
+
+        .home-fornecedor .search-container {
+            max-width: 100%;
+            margin-left: 0;
+        }
+
+        .home-fornecedor .search-form {
+            flex-direction: column;
+        }
+
+        .home-fornecedor .search-form .btn {
+            width: 100%;
+        }
+
         .home-fornecedor .supplier-card-header {
             flex-direction: column;
             align-items: flex-start;
@@ -361,13 +423,36 @@
 
 <div class="home-fornecedor">
     <section class="header-card">
-        <div class="header-text">
-            <h2>Fornecedores Cadastrados</h2>
-            <p>Centralize dados de fornecedores, contatos chave e informações fiscais em um só lugar.</p>
-            <div class="header-meta">
-                <span class="meta-pill">{{ total_fornecedores }} fornecedor{% if total_fornecedores|default:0 != 1 %}es{% endif %}</span>
+        <div class="header-top">
+            <div class="header-text">
+                <h2>Fornecedores Cadastrados</h2>
+                <p>Gerencie os fornecedores, visualize rapidamente contatos e abra detalhes completos quando necessário.</p>
+                <div class="header-meta">
+                    <span class="meta-pill">{{ total_fornecedores }} fornecedor{% if total_fornecedores|default:0 != 1 %}es{% endif %}</span>
+                    {% if query %}
+                    <span class="meta-pill search-pill">Pesquisando: "{{ query }}"</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Formulário de Pesquisa -->
+            <div class="search-container">
+                <form method="GET" action="{% url 'sistemaVendas:fornecedor_home' %}" class="search-form">
+                    <input 
+                        type="text" 
+                        name="q" 
+                        class="search-input"
+                        placeholder="Pesquisar..."
+                        value="{{ query|default:'' }}"
+                        autocomplete="off">
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                    {% if query %}
+                    <a href="{% url 'sistemaVendas:fornecedor_home' %}" class="btn btn-secondary">Limpar</a>
+                    {% endif %}
+                </form>
             </div>
         </div>
+        
         <div class="header-actions">
             <a href="{% url 'sistemaVendas:fornecedor_add' %}" class="btn btn-primary">
                 <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
@@ -485,14 +570,23 @@
     </div>
     {% else %}
     <section class="empty-state">
-        <h3>Nenhum fornecedor cadastrado</h3>
-        <p>Cadastre o primeiro fornecedor para acompanhar seus contatos e pedidos futuros.</p>
+        <h3>{% if query %}Nenhum fornecedor encontrado{% else %}Nenhum fornecedor cadastrado{% endif %}</h3>
+        <p>{% if query %}Tente buscar com outros termos ou limpe a pesquisa.{% else %}Cadastre o primeiro fornecedor para acompanhar seus contatos e pedidos futuros.{% endif %}</p>
+        {% if query %}
+        <a href="{% url 'sistemaVendas:fornecedor_home' %}" class="btn btn-secondary">
+            <svg fill="currentColor" viewBox="0 0 20 20" style="width: 16px; height: 16px;">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+            Limpar pesquisa
+        </a>
+        {% else %}
         <a href="{% url 'sistemaVendas:fornecedor_add' %}" class="btn btn-primary">
             <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                 <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
             </svg>
             Adicionar fornecedor
         </a>
+        {% endif %}
     </section>
     {% endif %}
 </div>
