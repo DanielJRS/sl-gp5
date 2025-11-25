@@ -1,0 +1,750 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios - Sistema de Vendas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #06b6d4;
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            color: var(--dark-bg);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .filter-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-card .icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card.primary .icon {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+        }
+
+        .stat-card.success .icon {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .stat-card.warning .icon {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .stat-card.info .icon {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--info-color);
+        }
+
+        .stat-card h6 {
+            color: var(--secondary-color);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--dark-bg);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-card .change {
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .change.positive {
+            color: var(--success-color);
+        }
+
+        .change.negative {
+            color: var(--danger-color);
+        }
+
+        .report-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .report-section h5 {
+            color: var(--dark-bg);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--light-bg);
+        }
+
+        .table-modern {
+            margin-bottom: 0;
+        }
+
+        .table-modern thead {
+            background: var(--light-bg);
+        }
+
+        .table-modern thead th {
+            border: none;
+            color: var(--secondary-color);
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 1rem;
+        }
+
+        .table-modern tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table-modern tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-modern tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .badge-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+
+        .progress-custom {
+            height: 8px;
+            border-radius: 10px;
+            background: #e2e8f0;
+        }
+
+        .progress-custom .progress-bar {
+            border-radius: 10px;
+        }
+
+        .btn-export {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 0.625rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-export:hover {
+            background: #059669;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--secondary-color);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        @media print {
+            .navbar, .filter-card, .btn-export {
+                display: none;
+            }
+            
+            .stat-card, .report-section {
+                box-shadow: none;
+                border: 1px solid #e2e8f0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'sistemaVendas:home' %}">
+                <i class="fas fa-chart-line me-2"></i>Sistema de Vendas
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'sistemaVendas:home' %}">
+                            <i class="fas fa-home me-1"></i>Início
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'sistemaVendas:venda_listar' %}">
+                            <i class="fas fa-shopping-cart me-1"></i>Vendas
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 py-4">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1><i class="fas fa-chart-bar me-2"></i>Relatórios e Análises</h1>
+                    <p class="text-muted mb-0">Visualize e analise os dados do seu negócio</p>
+                </div>
+                <button class="btn btn-export" onclick="window.print()">
+                    <i class="fas fa-file-pdf me-2"></i>Exportar PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filter-card">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-list me-1"></i>Tipo de Relatório</label>
+                    <select name="tipo" class="form-select" onchange="this.form.submit()">
+                        <option value="vendas" {% if tipo_relatorio == 'vendas' %}selected{% endif %}>Vendas</option>
+                        <option value="produtos" {% if tipo_relatorio == 'produtos' %}selected{% endif %}>Produtos</option>
+                        <option value="clientes" {% if tipo_relatorio == 'clientes' %}selected{% endif %}>Clientes</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-calendar me-1"></i>Data Início</label>
+                    <input type="date" name="data_inicio" class="form-control" value="{{ data_inicio }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-calendar me-1"></i>Data Fim</label>
+                    <input type="date" name="data_fim" class="form-control" value="{{ data_fim }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-2"></i>Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {% if tipo_relatorio == 'vendas' %}
+            <!-- Estatísticas de Vendas -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card primary">
+                        <div class="icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <h6>Total de Vendas</h6>
+                        <div class="value">{{ total_vendas|default:0 }}</div>
+                        <div class="change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>no período selecionado</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card success">
+                        <div class="icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <h6>Valor Total</h6>
+                        <div class="value">R$ {{ valor_total|floatformat:2|default:"0.00" }}</div>
+                        <div class="change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>vendas confirmadas</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card info">
+                        <div class="icon">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <h6>Ticket Médio</h6>
+                        <div class="value">R$ {{ ticket_medio|floatformat:2|default:"0.00" }}</div>
+                        <div class="change">
+                            <span>por venda</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card warning">
+                        <div class="icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h6>Status</h6>
+                        <div class="value">{{ vendas_por_status.0.quantidade|default:0 }}</div>
+                        <div class="change">
+                            <span>{{ vendas_por_status.0.status|default:"N/A" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <!-- Top Clientes -->
+                <div class="col-md-6">
+                    <div class="report-section">
+                        <h5><i class="fas fa-users me-2"></i>Top 5 Clientes</h5>
+                        {% if top_clientes %}
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th class="text-center">Compras</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cliente in top_clientes %}
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-user-circle me-2 text-primary"></i>
+                                            {{ cliente.cliente__nome|default:"Cliente não informado" }}
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary">{{ cliente.quantidade }}</span>
+                                        </td>
+                                        <td class="text-end fw-bold text-success">
+                                            R$ {{ cliente.total_compras|floatformat:2 }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>Nenhum dado disponível</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Top Vendedores -->
+                <div class="col-md-6">
+                    <div class="report-section">
+                        <h5><i class="fas fa-user-tie me-2"></i>Top 5 Vendedores</h5>
+                        {% if top_vendedores %}
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Vendedor</th>
+                                        <th class="text-center">Vendas</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for vendedor in top_vendedores %}
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-user-tie me-2 text-info"></i>
+                                            {{ vendedor.funcionario__nome|default:"Vendedor não informado" }}
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-info">{{ vendedor.quantidade }}</span>
+                                        </td>
+                                        <td class="text-end fw-bold text-success">
+                                            R$ {{ vendedor.total_vendas|floatformat:2 }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>Nenhum dado disponível</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Vendas por Status -->
+                <div class="col-md-6">
+                    <div class="report-section">
+                        <h5><i class="fas fa-tasks me-2"></i>Vendas por Status</h5>
+                        {% if vendas_por_status %}
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th class="text-center">Quantidade</th>
+                                        <th class="text-end">Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for status in vendas_por_status %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge-status bg-{% if status.status == 'CONFIRMADA' %}success{% elif status.status == 'PENDENTE' %}warning{% else %}secondary{% endif %}">
+                                                {{ status.status }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">{{ status.quantidade }}</td>
+                                        <td class="text-end fw-bold">R$ {{ status.valor|floatformat:2|default:"0.00" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>Nenhum dado disponível</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Formas de Pagamento -->
+                <div class="col-md-6">
+                    <div class="report-section">
+                        <h5><i class="fas fa-credit-card me-2"></i>Formas de Pagamento</h5>
+                        {% if vendas_por_pagamento %}
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Forma de Pagamento</th>
+                                        <th class="text-center">Quantidade</th>
+                                        <th class="text-end">Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pagamento in vendas_por_pagamento %}
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-money-bill-wave me-2 text-success"></i>
+                                            {{ pagamento.forma_pagamento }}
+                                        </td>
+                                        <td class="text-center">{{ pagamento.quantidade }}</td>
+                                        <td class="text-end fw-bold">R$ {{ pagamento.valor|floatformat:2 }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>Nenhum dado disponível</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        {% elif tipo_relatorio == 'produtos' %}
+            <!-- Estatísticas de Produtos -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card primary">
+                        <div class="icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <h6>Total de Produtos</h6>
+                        <div class="value">{{ total_produtos|default:0 }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card success">
+                        <div class="icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h6>Produtos Ativos</h6>
+                        <div class="value">{{ produtos_ativos|default:0 }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card warning">
+                        <div class="icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h6>Estoque Baixo</h6>
+                        <div class="value">{{ produtos_estoque_baixo|default:0 }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card info">
+                        <div class="icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <h6>Valor em Estoque</h6>
+                        <div class="value">R$ {{ valor_estoque|floatformat:2|default:"0.00" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <!-- Produtos Mais Vendidos -->
+                <div class="col-md-8">
+                    <div class="report-section">
+                        <h5><i class="fas fa-star me-2"></i>Produtos Mais Vendidos</h5>
+                        {% if itens_vendidos %}
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th>Código</th>
+                                        <th class="text-center">Quantidade</th>
+                                        <th class="text-end">Total Vendido</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in itens_vendidos %}
+                                    <tr>
+                                        <td>{{ item.produto__nome }}</td>
+                                        <td><code>{{ item.produto__codigo }}</code></td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary">{{ item.quantidade_vendida|floatformat:0 }}</span>
+                                        </td>
+                                        <td class="text-end fw-bold text-success">
+                                            R$ {{ item.valor_total|floatformat:2 }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>Nenhum produto vendido no período</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Produtos com Estoque Baixo -->
+                <div class="col-md-4">
+                    <div class="report-section">
+                        <h5><i class="fas fa-exclamation-circle me-2"></i>Alerta de Estoque</h5>
+                        {% if produtos_alerta %}
+                            <div class="list-group">
+                                {% for produto in produtos_alerta %}
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">{{ produto.nome }}</h6>
+                                            <small class="text-muted">Mínimo: {{ produto.estoque_minimo }}</small>
+                                        </div>
+                                        <span class="badge bg-danger">{{ produto.estoque_atual }}</span>
+                                    </div>
+                                    <div class="progress progress-custom mt-2">
+                                        <div class="progress-bar bg-danger" 
+                                             style="width: {% widthratio produto.estoque_atual produto.estoque_minimo 100 %}%">
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-check-circle"></i>
+                                <p>Todos os produtos com estoque adequado</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        {% elif tipo_relatorio == 'clientes' %}
+            <!-- Estatísticas de Clientes -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card primary">
+                        <div class="icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h6>Total de Clientes</h6>
+                        <div class="value">{{ total_clientes|default:0 }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card success">
+                        <div class="icon">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                        <h6>Compraram no Período</h6>
+                        <div class="value">{{ clientes_compraram|default:0 }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card info">
+                        <div class="icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h6>Novos Clientes</h6>
+                        <div class="value">{{ novos_clientes|default:0 }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card warning">
+                        <div class="icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <h6>Taxa de Conversão</h6>
+                        <div class="value">
+                            {% if total_clientes > 0 %}
+                                {% widthratio clientes_compraram total_clientes 100 %}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <!-- Clientes por Cidade -->
+                <div class="col-md-6">
+                    <div class="report-section">
+                        <h5><i class="fas fa-map-marker-alt me-2"></i>Clientes por Cidade</h5>
+                        {% if clientes_por_cidade %}
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Cidade</th>
+                                        <th class="text-end">Quantidade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cidade in clientes_por_cidade %}
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-city me-2 text-primary"></i>
+                                            {{ cidade.cidade|default:"Não informado" }}
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="badge bg-primary">{{ cidade.quantidade }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>Nenhum dado disponível</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Clientes por UF -->
+                <div class="col-md-6">
+                    <div class="report-section">
+                        <h5><i class="fas fa-flag me-2"></i>Clientes por Estado</h5>
+                        {% if clientes_por_uf %}
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Estado</th>
+                                        <th class="text-end">Quantidade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for uf in clientes_por_uf %}
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-map me-2 text-info"></i>
+                                            {{ uf.uf }}
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="badge bg-info">{{ uf.quantidade }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>Nenhum dado disponível</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

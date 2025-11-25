@@ -48,7 +48,7 @@ class ClienteForm(forms.ModelForm):
             }),
             'cep': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': '00000-000 (apenas números)'
+                'placeholder': '(apenas números)'
             }),
             'endereco': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -75,9 +75,9 @@ class ClienteForm(forms.ModelForm):
             }),
         }
         labels = {
-            'nome': 'Nome Completo *',
+            'nome': 'Nome Completo',
             'rg': 'RG',
-            'cpf': 'CPF *',
+            'cpf': 'CPF ',
             'email': 'Email',
             'celular': 'Celular',
             'telefone': 'Telefone',
@@ -110,14 +110,14 @@ class ClienteForm(forms.ModelForm):
             return cep
         cep_digits = self._only_digits(cep)
         if len(cep_digits) != 8:
-            raise forms.ValidationError(f'CEP deve conter exatamente 8 dígitos numéricos. Encontrado: {len(cep_digits)}')
+            raise forms.ValidationError(f'Encontrado: {len(cep_digits)}')
         return cep_digits
 
     def clean_celular(self):
         celular = self.cleaned_data.get('celular')
         if not celular:
             return celular
-        celular_digits = self._only_digits(celular)
+        celular_digits = self._only_digits(celular) 
         if len(celular_digits) not in (10, 11):
             raise forms.ValidationError(f'Celular deve ter 10 ou 11 dígitos numéricos (DDD + número). Encontrado: {len(celular_digits)}')
         return celular_digits
@@ -193,9 +193,9 @@ class FuncionarioForm(forms.ModelForm):
             }),
         }
         labels = {
-            'nome': 'Nome Completo *',
+            'nome': 'Nome Completo',
             'rg': 'RG',
-            'cpf': 'CPF *',
+            'cpf': 'CPF',
             'email': 'Email',
             'celular': 'Celular',
             'telefone': 'Telefone',

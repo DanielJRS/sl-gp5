@@ -46,4 +46,7 @@ urlpatterns = [
     #URL para logout
     path('logout/', views.logout_view, name='logout'),
 
+    #URL para relatorio 
+    path('relatorios/', views.relatorio_home, name='relatorio_home'),
+
 ]
