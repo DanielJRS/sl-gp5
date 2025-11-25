@@ -1,187 +1,450 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Adicionar Cliente</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if form.instance.pk %}Editar{% else %}Adicionar{% endif %} Cliente - Sistema de Vendas</title>
     <style>
+        :root {
+            --brand-primary: #0c4b33;
+            --brand-secondary: #092e20;
+            --brand-accent: #44b78b;
+            --gray-100: #f8f9fa;
+            --gray-200: #f1f3f5;
+            --gray-300: #dfe0e1;
+            --gray-700: #495057;
+            --gray-900: #212529;
+            --danger: #dc3545;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #f5f5f5;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--gray-100);
+            color: var(--gray-900);
+            padding: 32px 24px 48px;
         }
+
+        .form-page {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        .form-hero {
+            background: linear-gradient(180deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+            color: rgba(255, 255, 255, 0.92);
+            padding: 36px 40px;
+            border-radius: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 24px;
+            box-shadow: 0 22px 45px rgba(9, 46, 32, 0.15);
+            margin-bottom: 32px;
+            width: 100%;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.16);
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .form-hero h1 {
+            margin: 12px 0 8px;
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        .form-hero p {
+            margin: 0;
+            max-width: 560px;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(180deg, var(--brand-accent) 0%, #369670 100%);
+            color: #ffffff;
+            box-shadow: 0 12px 20px rgba(68, 183, 139, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 26px rgba(68, 183, 139, 0.25);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: #ffffff;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-outline.dark {
+            border-color: var(--gray-300);
+            color: var(--gray-900);
+        }
+
+        .btn-outline.dark:hover {
+            background: var(--gray-200);
+        }
+
         .form-card {
-            max-width: 900px;
-            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid rgba(12, 75, 51, 0.07);
+            box-shadow: 0 12px 30px rgba(9, 46, 32, 0.08);
+            padding: 32px 34px;
+            margin: 0 auto;
         }
-        .card-header {
-            background: linear-gradient(135deg, #2d5f4f 0%, #3a7561 100%);
-            color: white;
+
+        .form-alert {
+            background: rgba(220, 53, 69, 0.12);
+            border: 1px solid rgba(220, 53, 69, 0.32);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 24px;
+            color: var(--danger);
         }
-        .required-field::after {
-            content: " *";
-            color: red;
+
+        .form-alert strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .form-alert ul {
+            margin: 0;
+            padding-left: 18px;
+            color: var(--gray-900);
+        }
+
+        .card-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .section-heading {
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--brand-accent);
+        }
+
+        .section-heading h2 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--brand-secondary);
+            font-weight: 600;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px 20px;
+        }
+
+        .form-grid.col-2 {
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+        }
+
+        .form-grid.col-4 {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-field.span-2 {
+            grid-column: span 2;
+        }
+
+        .form-field.span-3 {
+            grid-column: span 3;
+        }
+
+        .form-field label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-700);
+            letter-spacing: 0.2px;
+        }
+
+        .form-field label .required {
+            color: var(--danger);
+        }
+
+        .form-control,
+        .form-select {
+            width: 100%;
+            border: 1px solid var(--gray-300);
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 14px;
+            color: var(--gray-900);
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--brand-accent);
+            box-shadow: 0 0 0 3px rgba(68, 183, 139, 0.18);
+        }
+
+        .field-error {
+            font-size: 12px;
+            color: var(--danger);
+            background: rgba(220, 53, 69, 0.08);
+            border-left: 3px solid rgba(220, 53, 69, 0.4);
+            padding: 8px 10px;
+            border-radius: 8px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding-top: 24px;
+            border-top: 1px solid var(--gray-300);
+            margin-top: 12px;
+        }
+
+        @media (max-width: 720px) {
+            body {
+                padding: 24px 16px 40px;
+            }
+
+            .form-card {
+                padding: 26px 24px;
+            }
+
+            .form-actions {
+                flex-direction: column-reverse;
+                align-items: stretch;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+
+            .form-grid,
+            .form-grid.col-2,
+            .form-grid.col-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .form-field.span-2,
+            .form-field.span-3 {
+                grid-column: span 1;
+            }
+
+            .form-hero {
+                padding: 28px 24px;
+            }
+
+            .form-hero h1 {
+                font-size: 26px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container form-card">
-        <div class="card shadow-sm">
-            <div class="card-header d-flex justify-content-between align-items-center py-3">
-                <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Adicionar Cliente</h5>
-                <a class="btn btn-sm btn-light" href="{% url 'sistemaVendas:cliente_home' %}">
-                    <i class="fas fa-arrow-left me-1"></i>Voltar
-                </a>
+    <div class="form-page">
+        <header class="form-hero">
+            <div>
+                <span class="hero-badge">Cadastros</span>
+                <h1>{% if form.instance.pk %}Editar Cliente{% else %}Adicionar Cliente{% endif %}</h1>
+                <p>Preencha os dados pessoais, de contato e endereço do cliente para concluir o cadastro.</p>
             </div>
-            <div class="card-body p-4">
-                {% if form.errors %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <strong><i class="fas fa-exclamation-triangle me-2"></i>Corrija os erros abaixo:</strong>
-                    <ul class="mb-0 mt-2">
-                    {% for field in form %}
-                        {% for error in field.errors %}
-                        <li>{{ field.label }}: {{ error }}</li>
-                        {% endfor %}
-                    {% endfor %}
-                    {% for error in form.non_field_errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-                {% endif %}
+            <div class="hero-actions">
+                <a href="{% url 'sistemaVendas:cliente_home' %}" class="btn btn-outline">Voltar para lista</a>
+            </div>
+        </header>
 
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    
-                    <!-- Dados Pessoais -->
-                    <h6 class="text-muted mb-3 border-bottom pb-2">
-                        <i class="fas fa-user me-2"></i>Dados Pessoais
-                    </h6>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label for="{{ form.nome.id_for_label }}" class="form-label required-field">
-                                {{ form.nome.label }}
-                            </label>
+        {% if form.errors %}
+        <div class="form-alert">
+            <strong>Corrija os erros abaixo:</strong>
+            <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <section class="form-card">
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="card-section">
+                    <div class="section-heading">
+                        <h2>Dados Pessoais</h2>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field span-2">
+                            <label for="{{ form.nome.id_for_label }}">{{ form.nome.label }} <span class="required">*</span></label>
                             {{ form.nome }}
                             {% if form.nome.errors %}
-                                <div class="text-danger small">{{ form.nome.errors.0 }}</div>
+                                <div class="field-error">{{ form.nome.errors.0 }}</div>
                             {% endif %}
                         </div>
-                        <div class="col-md-3">
-                            <label for="{{ form.rg.id_for_label }}" class="form-label">
-                                {{ form.rg.label }}
-                            </label>
+                        <div class="form-field">
+                            <label for="{{ form.rg.id_for_label }}">{{ form.rg.label }}</label>
                             {{ form.rg }}
+                            {% if form.rg.errors %}
+                                <div class="field-error">{{ form.rg.errors.0 }}</div>
+                            {% endif %}
                         </div>
-                        <div class="col-md-3">
-                            <label for="{{ form.cpf.id_for_label }}" class="form-label required-field">
-                                {{ form.cpf.label }}
-                            </label>
+                        <div class="form-field">
+                            <label for="{{ form.cpf.id_for_label }}">{{ form.cpf.label }} <span class="required">*</span></label>
                             {{ form.cpf }}
                             {% if form.cpf.errors %}
-                                <div class="text-danger small">{{ form.cpf.errors.0 }}</div>
+                                <div class="field-error">{{ form.cpf.errors.0 }}</div>
                             {% endif %}
                         </div>
                     </div>
+                </div>
 
-                    <!-- Contato -->
-                    <h6 class="text-muted mb-3 border-bottom pb-2">
-                        <i class="fas fa-phone me-2"></i>Contato
-                    </h6>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-4">
-                            <label for="{{ form.email.id_for_label }}" class="form-label">
-                                {{ form.email.label }}
-                            </label>
+                <div class="card-section">
+                    <div class="section-heading">
+                        <h2>Contato</h2>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
                             {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="field-error">{{ form.email.errors.0 }}</div>
+                            {% endif %}
                         </div>
-                        <div class="col-md-4">
-                            <label for="{{ form.celular.id_for_label }}" class="form-label">
-                                {{ form.celular.label }}
-                            </label>
+                        <div class="form-field">
+                            <label for="{{ form.celular.id_for_label }}">{{ form.celular.label }}</label>
                             {{ form.celular }}
                             {% if form.celular.errors %}
-                                <div class="text-danger small">{{ form.celular.errors.0 }}</div>
+                                <div class="field-error">{{ form.celular.errors.0 }}</div>
                             {% endif %}
                         </div>
-                        <div class="col-md-4">
-                            <label for="{{ form.telefone.id_for_label }}" class="form-label">
-                                {{ form.telefone.label }}
-                            </label>
+                        <div class="form-field">
+                            <label for="{{ form.telefone.id_for_label }}">{{ form.telefone.label }}</label>
                             {{ form.telefone }}
                             {% if form.telefone.errors %}
-                                <div class="text-danger small">{{ form.telefone.errors.0 }}</div>
+                                <div class="field-error">{{ form.telefone.errors.0 }}</div>
                             {% endif %}
                         </div>
                     </div>
+                </div>
 
-                    <!-- Endereço -->
-                    <h6 class="text-muted mb-3 border-bottom pb-2">
-                        <i class="fas fa-map-marker-alt me-2"></i>Endereço
-                    </h6>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-3">
-                            <label for="{{ form.cep.id_for_label }}" class="form-label">
-                                {{ form.cep.label }}
-                            </label>
+                <div class="card-section">
+                    <div class="section-heading">
+                        <h2>Endereço</h2>
+                    </div>
+                    <div class="form-grid col-4">
+                        <div class="form-field">
+                            <label for="{{ form.cep.id_for_label }}">{{ form.cep.label }}</label>
                             {{ form.cep }}
                             {% if form.cep.errors %}
-                                <div class="text-danger small">{{ form.cep.errors.0 }}</div>
+                                <div class="field-error">{{ form.cep.errors.0 }}</div>
                             {% endif %}
                         </div>
-                        <div class="col-md-7">
-                            <label for="{{ form.endereco.id_for_label }}" class="form-label">
-                                {{ form.endereco.label }}
-                            </label>
+                        <div class="form-field span-2">
+                            <label for="{{ form.endereco.id_for_label }}">{{ form.endereco.label }}</label>
                             {{ form.endereco }}
+                            {% if form.endereco.errors %}
+                                <div class="field-error">{{ form.endereco.errors.0 }}</div>
+                            {% endif %}
                         </div>
-                        <div class="col-md-2">
-                            <label for="{{ form.numero.id_for_label }}" class="form-label">
-                                {{ form.numero.label }}
-                            </label>
+                        <div class="form-field">
+                            <label for="{{ form.numero.id_for_label }}">{{ form.numero.label }}</label>
                             {{ form.numero }}
+                            {% if form.numero.errors %}
+                                <div class="field-error">{{ form.numero.errors.0 }}</div>
+                            {% endif %}
                         </div>
-                        <div class="col-md-4">
-                            <label for="{{ form.complemento.id_for_label }}" class="form-label">
-                                {{ form.complemento.label }}
-                            </label>
+                        <div class="form-field span-2">
+                            <label for="{{ form.complemento.id_for_label }}">{{ form.complemento.label }}</label>
                             {{ form.complemento }}
+                            {% if form.complemento.errors %}
+                                <div class="field-error">{{ form.complemento.errors.0 }}</div>
+                            {% endif %}
                         </div>
-                        <div class="col-md-4">
-                            <label for="{{ form.bairro.id_for_label }}" class="form-label">
-                                {{ form.bairro.label }}
-                            </label>
+                        <div class="form-field">
+                            <label for="{{ form.bairro.id_for_label }}">{{ form.bairro.label }}</label>
                             {{ form.bairro }}
+                            {% if form.bairro.errors %}
+                                <div class="field-error">{{ form.bairro.errors.0 }}</div>
+                            {% endif %}
                         </div>
-                        <div class="col-md-3">
-                            <label for="{{ form.cidade.id_for_label }}" class="form-label">
-                                {{ form.cidade.label }}
-                            </label>
+                        <div class="form-field">
+                            <label for="{{ form.cidade.id_for_label }}">{{ form.cidade.label }}</label>
                             {{ form.cidade }}
+                            {% if form.cidade.errors %}
+                                <div class="field-error">{{ form.cidade.errors.0 }}</div>
+                            {% endif %}
                         </div>
-                        <div class="col-md-1">
-                            <label for="{{ form.uf.id_for_label }}" class="form-label">
-                                {{ form.uf.label }}
-                            </label>
+                        <div class="form-field">
+                            <label for="{{ form.uf.id_for_label }}">{{ form.uf.label }}</label>
                             {{ form.uf }}
+                            {% if form.uf.errors %}
+                                <div class="field-error">{{ form.uf.errors.0 }}</div>
+                            {% endif %}
                         </div>
                     </div>
+                </div>
 
-                    <!-- Botões -->
-                    <div class="d-flex gap-2 justify-content-end border-top pt-3">
-                        <a class="btn btn-outline-secondary" href="{% url 'sistemaVendas:cliente_home' %}">
-                            <i class="fas fa-times me-1"></i>Cancelar
-                        </a>
-                        <button class="btn btn-success" type="submit">
-                            <i class="fas fa-save me-1"></i>Salvar Cliente
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <div class="form-actions">
+                    <a href="{% url 'sistemaVendas:cliente_home' %}" class="btn btn-outline dark">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">
+                        {% if form.instance.pk %}Salvar Alterações{% else %}Cadastrar Cliente{% endif %}
+                    </button>
+                </div>
+            </form>
+        </section>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

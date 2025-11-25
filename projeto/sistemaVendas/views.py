@@ -502,3 +502,12 @@ def logout_view(request):
         return redirect('sistemaVendas:login')
     return render(request, 'login.html')
 
+
+@login_required
+def configuracoes_view(request):
+    """View para a página de configurações do sistema."""
+    context = {
+        'usuario': request.user,
+    }
+    return render(request, 'configuracoes.html', context)
+

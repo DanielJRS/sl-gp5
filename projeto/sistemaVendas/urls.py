@@ -43,6 +43,9 @@ urlpatterns = [
     path('venda/cancelar/<int:venda_id>/', views.venda_cancelar, name='venda_cancelar'),
     path('venda/deletar/<int:venda_id>/', views.venda_deletar, name='venda_deletar'),
 
+    #URL para configurações
+    path('configuracoes/', views.configuracoes_view, name='configuracoes'),
+
     #URL para logout
     path('logout/', views.logout_view, name='logout'),
 

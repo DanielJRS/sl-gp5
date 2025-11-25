@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações - Sistema de Vendas</title>
+    <style>
+        :root {
+            --brand-primary: #0c4b33;
+            --brand-secondary: #092e20;
+            --brand-accent: #44b78b;
+            --gray-100: #f8f9fa;
+            --gray-200: #f1f3f5;
+            --gray-300: #dfe0e1;
+            --gray-700: #495057;
+            --gray-900: #212529;
+            --danger: #dc3545;
+            --warning: #f59f00;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--gray-100);
+            color: var(--gray-900);
+            padding: 32px 24px 48px;
+        }
+
+        .config-page {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        .config-hero {
+            background: linear-gradient(180deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+            color: rgba(255, 255, 255, 0.92);
+            padding: 36px 40px;
+            border-radius: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 24px;
+            box-shadow: 0 22px 45px rgba(9, 46, 32, 0.15);
+            margin-bottom: 32px;
+            width: 100%;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.16);
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .config-hero h1 {
+            margin: 12px 0 8px;
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        .config-hero p {
+            margin: 0;
+            max-width: 560px;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+            text-decoration: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: #ffffff;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .config-grid {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .config-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid rgba(12, 75, 51, 0.07);
+            box-shadow: 0 12px 30px rgba(9, 46, 32, 0.08);
+            padding: 32px 34px;
+            margin: 0 auto 24px;
+        }
+
+        .card-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .section-heading h2 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--brand-secondary);
+            font-weight: 600;
+        }
+
+        .section-heading p {
+            margin: 6px 0 0;
+            color: var(--gray-700);
+            font-size: 14px;
+        }
+
+        .config-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 20px;
+            background: var(--gray-100);
+            border-radius: 12px;
+            border: 1px solid var(--gray-300);
+        }
+
+        .config-item-info {
+            flex: 1;
+        }
+
+        .config-item-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0 0 6px;
+        }
+
+        .config-item-description {
+            font-size: 14px;
+            color: var(--gray-700);
+            margin: 0;
+        }
+
+        .config-item-value {
+            font-size: 14px;
+            color: var(--brand-accent);
+            font-weight: 600;
+            padding: 8px 16px;
+            background: rgba(68, 183, 139, 0.12);
+            border-radius: 8px;
+            margin-right: 12px;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #ffffff;
+            box-shadow: 0 12px 20px rgba(220, 53, 69, 0.2);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 26px rgba(220, 53, 69, 0.25);
+            background: #c82333;
+        }
+
+        .btn-danger:active {
+            transform: translateY(0);
+            box-shadow: 0 10px 18px rgba(220, 53, 69, 0.2);
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-success {
+            background: rgba(40, 167, 69, 0.12);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            color: #155724;
+        }
+
+        .alert-info {
+            background: rgba(68, 183, 139, 0.12);
+            border: 1px solid rgba(68, 183, 139, 0.3);
+            color: var(--brand-secondary);
+        }
+
+        @media (max-width: 720px) {
+            body {
+                padding: 24px 16px 40px;
+            }
+
+            .config-card {
+                padding: 26px 24px;
+            }
+
+            .config-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .config-item-value {
+                margin-right: 0;
+            }
+
+            .config-hero {
+                padding: 28px 24px;
+            }
+
+            .config-hero h1 {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="config-page">
+        <header class="config-hero">
+            <div>
+                <span class="hero-badge">Sistema</span>
+                <h1>Configurações</h1>
+                <p>Gerencie preferências, conta e outras opções do sistema.</p>
+            </div>
+            <div class="hero-actions">
+                <a href="{% url 'sistemaVendas:home' %}" class="btn btn-outline">Voltar para painel</a>
+            </div>
+        </header>
+
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="config-grid">
+            <section class="config-card">
+                <div class="card-section">
+                    <div class="section-heading">
+                        <h2>Conta e usuário</h2>
+                        <p>Informações da sua conta e ações relacionadas ao acesso.</p>
+                    </div>
+
+                    <div class="config-item">
+                        <div class="config-item-info">
+                            <h3 class="config-item-title">Usuário atual</h3>
+                            <p class="config-item-description">Você está logado como <strong>{{ usuario.username }}</strong></p>
+                        </div>
+                        <span class="config-item-value">{{ usuario.username }}</span>
+                    </div>
+
+                    <div class="config-item">
+                        <div class="config-item-info">
+                            <h3 class="config-item-title">Trocar de usuário</h3>
+                            <p class="config-item-description">Saia da sua conta atual e faça login com outro usuário</p>
+                        </div>
+                        <form method="POST" action="{% url 'sistemaVendas:logout' %}" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">
+                                <svg fill="currentColor" viewBox="0 0 20 20" width="16" height="16">
+                                    <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
+                                </svg>
+                                Trocar de usuário
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <section class="config-card">
+                <div class="card-section">
+                    <div class="section-heading">
+                        <h2>Informações do Sistema</h2>
+                        <p>Detalhes sobre a aplicação e versão atual.</p>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        <span><strong>Sistema de Vendas</strong> - Gerenciamento empresarial completo</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</body>
+</html>

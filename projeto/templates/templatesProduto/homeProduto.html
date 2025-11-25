@@ -119,6 +119,7 @@
         flex-wrap: wrap;
         gap: 16px;
         align-items: center;
+        width: 100%;
     }
 
     .home-produto .filters-card select,
@@ -126,8 +127,66 @@
         accent-color: #44b78b;
     }
 
-    .home-produto .filters-card .form-select {
+    .home-produto .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .home-produto .filter-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .home-produto .filter-select {
         min-width: 220px;
+        padding: 8px 12px;
+        border: 1px solid #dfe0e1;
+        border-radius: 6px;
+        font-size: 14px;
+        background: #ffffff;
+        color: #212529;
+        cursor: pointer;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .home-produto .filter-select:focus {
+        outline: none;
+        border-color: #44b78b;
+        box-shadow: 0 0 0 3px rgba(68, 183, 139, 0.15);
+    }
+
+    .home-produto .filter-checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .home-produto .filter-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .home-produto .filter-checkbox-label {
+        font-size: 14px;
+        color: #495057;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .home-produto .filter-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-top: 8px;
+    }
+
+    .home-produto .btn-sm {
+        padding: 8px 14px;
+        font-size: 13px;
     }
 
     .home-produto .products-wrapper {
@@ -373,8 +432,20 @@
             gap: 12px;
         }
 
-        .home-produto .filters-card .form-select {
+        .home-produto .filter-select {
             min-width: 100%;
+        }
+
+        .home-produto .filter-group {
+            width: 100%;
+        }
+
+        .home-produto .filter-actions {
+            width: 100%;
+        }
+
+        .home-produto .filter-actions .btn {
+            flex: 1;
         }
     }
 </style>
@@ -404,22 +475,22 @@
 
     <section class="filters-card">
         <form method="get">
-            <div>
-                <label for="categoria" class="form-label mb-1">Categoria</label>
-                <select id="categoria" name="categoria" class="form-select form-select-sm">
+            <div class="filter-group">
+                <label for="categoria" class="filter-label">Categoria</label>
+                <select id="categoria" name="categoria" class="filter-select">
                     <option value="">Todas</option>
                     {% for value, label in categorias %}
                     <option value="{{ value }}" {% if categoria_selecionada == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="form-check mt-4">
-                <input class="form-check-input" type="checkbox" value="1" id="estoque_baixo" name="estoque_baixo" {% if estoque_baixo %}checked{% endif %}>
-                <label class="form-check-label" for="estoque_baixo">
+            <div class="filter-checkbox-wrapper">
+                <input class="filter-checkbox" type="checkbox" value="1" id="estoque_baixo" name="estoque_baixo" {% if estoque_baixo %}checked{% endif %}>
+                <label class="filter-checkbox-label" for="estoque_baixo">
                     Apenas estoque baixo
                 </label>
             </div>
-            <div class="d-flex gap-2 align-items-center mt-2">
+            <div class="filter-actions">
                 <button type="submit" class="btn btn-primary btn-sm">
                     <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                         <path fill-rule="evenodd" d="M8 4a4 4 0 105.657 5.657l3.536 3.535a1 1 0 001.415-1.414l-3.536-3.535A4 4 0 008 4zm-6 4a6 6 0 1110.89 3.476l3.817 3.818a3 3 0 11-4.243 4.242l-3.818-3.816A6 6 0 012 8z" clip-rule="evenodd"/>
