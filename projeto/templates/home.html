@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - Sistema Django</title>
+    <title>Página inicial - Sistema vendas</title>
     <style>
         * {
             margin: 0;
@@ -389,8 +389,8 @@
     <div class="container">
         <aside class="sidebar">
             <div class="logo">
-                <h1>Sistema Django</h1>
-                <p>Gerenciamento Empresarial</p>
+                <h1>Sistema vendas</h1>
+                <p>Gerenciamento empresarial</p>
             </div>
 
             <nav class="menu">
@@ -400,7 +400,7 @@
                         <svg fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
                         </svg>
-                        Página Inicial
+                        Página inicial
                     </a>
                 </div>
 
@@ -448,18 +448,18 @@
                         <svg fill="currentColor" viewBox="0 0 20 20">
                             <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
                         </svg>
-                        relatórios
+                        Relatórios
                     </a>
                 </div>
 
                 <div class="menu-section">
                     <div class="menu-section-title">Sistema</div>
-                    <a href="#" class="menu-item">
+                    <!-- <a href="#" class="menu-item">
                         <svg fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
                         </svg>
                         Configurações
-                    </a>
+                    </a> -->
 
                     <form method="POST" action="{% url 'sistemaVendas:logout' %}" style="margin: 0;">
                         {% csrf_token %}
@@ -474,9 +474,8 @@
             </nav>
 
             <div class="user-section">
-                <div class="user-avatar">U</div>
+                <div class="user-avatar">A</div>
                 <div class="user-info">
-                    <h4>Usuário</h4>
                     <p>Administrador</p>
                 </div>
             </div>
@@ -485,19 +484,17 @@
         <main class="main-content">
             <header class="header">
                 <div>
-                    <h2>Página Inicial</h2>
+                    <h2>Página inicial</h2>
                     <p class="header-subtitle">Bem-vindo ao sistema de gerenciamento</p>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-secondary">Atualizar</button>
-                    <button class="btn btn-primary">Novo Registro</button>
                 </div>
             </header>
 
             <div class="content">
                 <div class="cards">
                     <div class="card">
-                        <div class="card-title">Total de Clientes</div>
+                        <div class="card-title">Total de clientes</div>
                         <div class="card-value">{{ total_clientes }}</div>
                         <div class="card-change">Cadastrados no sistema</div>
                     </div>
@@ -515,7 +512,7 @@
                     </div>
 
                     <div class="card">
-                        <div class="card-title">Vendas do Mês</div>
+                        <div class="card-title">Vendas do mês</div>
                         <div class="card-value">R$ {{ total_vendas_mes|floatformat:2 }}</div>
                         <div class="card-change {% if variacao_vendas < 0 %}negative{% endif %}">
                             {% if variacao_vendas >= 0 %}+{% endif %}{{ variacao_vendas|floatformat:1 }}% em relação ao mês anterior
@@ -531,7 +528,7 @@
 
                 <div class="sections-grid">
                     <div class="section">
-                        <h3>Últimas Vendas</h3>
+                        <h3>Últimas vendas</h3>
                         {% if ultimas_vendas %}
                         <table class="table">
                             <thead>
@@ -584,7 +581,7 @@
                     </div>
 
                     <div class="section">
-                        <h3>Produtos Cadastrados Recentemente</h3>
+                        <h3>Últimos produtos cadastrados</h3>
                         {% if produtos_recentes %}
                         <table class="table">
                             <thead>

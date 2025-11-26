@@ -50,13 +50,14 @@ class ClienteModel(models.Model):
     email = models.EmailField(max_length=60, blank=True, null=True)
     celular = models.CharField(max_length=20,  blank=True, null=True)
     telefone = models.CharField(max_length=20,  blank=True, null=True)
-    cep = models.CharField(max_length=8, blank=True, null=True)
+    cep = models.CharField(max_length=9, blank=True, null=True)
     endereco = models.CharField(max_length=100, blank=True, null=True)
     numero = models.IntegerField(blank=True, null=True)
     complemento = models.CharField(max_length=100, blank=True, null=True)
     bairro = models.CharField(max_length=30, blank=True, null=True)
     cidade = models.CharField(max_length=30, blank=True, null=True)
     uf = models.CharField(max_length=2, choices=UF_CHOICES, blank=True, null=True)
+    ativo = models.BooleanField(default=True) 
 
     def __str__(self):
         return f"{self.nome} - {self.cpf}"
@@ -106,6 +107,7 @@ class funcionarioModel(models.Model):
         bairro = models.CharField(max_length=30, blank=True, null=True)
         cidade = models.CharField(max_length=30, blank=True, null=True)
         uf = models.CharField(max_length=2, choices=UF_CHOICES, blank=True, null=True)
+        ativo = models.BooleanField(default=True)
 
         def __str__(self):
             return f"{self.nome} - {self.cpf}"
@@ -157,6 +159,7 @@ class FornecedorModel(models.Model):
     uf = models.CharField(max_length=2, choices=UF_CHOICES, blank=True, null=True)
     contato_responsavel = models.CharField(max_length=60, blank=True, null=True)
     observacoes = models.TextField(blank=True, null=True)
+    ativo = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.razao_social} - {self.cnpj}"

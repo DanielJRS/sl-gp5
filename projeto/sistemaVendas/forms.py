@@ -336,6 +336,12 @@ class VendaForm(forms.ModelForm):
             'status': 'Status da Venda',
             'observacoes': 'Observações',
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['cliente'].queryset = ClienteModel.objects.filter(ativo=True).order_by('nome')
+        self.fields['funcionario'].queryset = funcionarioModel.objects.filter(ativo=True).order_by('nome')
+
 
 class ItemVendaForm(forms.ModelForm):
     class Meta:
@@ -356,6 +362,8 @@ class ItemVendaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['produto'].queryset = ProdutoModel.objects.filter(ativo=True).order_by('nome')
+        
         if 'DELETE' in self.fields:
             self.fields['DELETE'].widget = forms.HiddenInput(attrs={'data-delete-input': 'true'})
             self.fields['DELETE'].initial = ''

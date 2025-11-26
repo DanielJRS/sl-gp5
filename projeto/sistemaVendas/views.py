@@ -40,11 +40,12 @@ def _montar_contexto_dashboard():
     inicio_mes = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
 
-    total_clientes = ClienteModel.objects.count()
+    total_clientes = ClienteModel.objects.filter(ativo=True).count()
 
-    total_produtos = ProdutoModel.objects.count()
+    total_produtos = ProdutoModel.objects.filter(ativo=True).count()
     produtos_ativos = ProdutoModel.objects.filter(ativo=True).count()
     produtos_estoque_baixo = ProdutoModel.objects.filter(
+        ativo=True,
         estoque_atual__lte=models.F('estoque_minimo')
     ).count()
 
@@ -67,8 +68,9 @@ def _montar_contexto_dashboard():
     else:
         variacao_vendas = 100 if total_vendas_mes > 0 else 0
 
-    total_fornecedores = FornecedorModel.objects.count()
+    total_fornecedores = FornecedorModel.objects.filter(ativo=True).count()
     fornecedores_com_produtos = FornecedorModel.objects.filter(
+        ativo=True,
         produtos__isnull=False
     ).distinct().count()
 
@@ -76,9 +78,9 @@ def _montar_contexto_dashboard():
         'cliente', 'funcionario'
     ).order_by('-data_venda')[:5]
 
-    produtos_recentes = ProdutoModel.objects.select_related(
-        'fornecedor'
-    ).order_by('-data_cadastro')[:5]
+    produtos_recentes = ProdutoModel.objects.filter(
+        ativo=True
+    ).select_related('fornecedor').order_by('-data_cadastro')[:5]
 
     produtos_alerta = ProdutoModel.objects.filter(
         estoque_atual__lte=models.F('estoque_minimo'),
@@ -124,10 +126,12 @@ def cliente_add(request):
 def cliente_home(request):
     query = request.GET.get('q', '').strip()
     
+    clientes = ClienteModel.objects.filter(ativo=True)
+    
     if query:
-        clientes = ClienteModel.objects.filter(nome__icontains=query).order_by('nome')
-    else:
-        clientes = ClienteModel.objects.all().order_by('nome')
+        clientes = clientes.filter(nome__icontains=query)
+    
+    clientes = clientes.order_by('nome')
     
     contexto = {
         'clientes': clientes,
@@ -153,17 +157,22 @@ def cliente_editar(request, cliente_id):
 @login_required
 def cliente_deletar(request, cliente_id):
     cliente = get_object_or_404(ClienteModel, id=cliente_id)
-    cliente.delete()
+    cliente.ativo = False
+    cliente.save()
     return redirect('sistemaVendas:cliente_home')
 
 
 @login_required
 def funcionario_home(request):
     query = request.GET.get('q', '').strip()
+    
+    funcionarios = funcionarioModel.objects.filter(ativo=True)
+    
     if query:
-        funcionarios = funcionarioModel.objects.filter(nome__icontains=query).order_by('nome')
-    else:
-        funcionarios = funcionarioModel.objects.all().order_by('nome')
+        funcionarios = funcionarios.filter(nome__icontains=query)
+    
+    funcionarios = funcionarios.order_by('nome')
+    
     contexto = {
         'funcionarios': funcionarios,
         'total_funcionarios': funcionarios.count(),
@@ -203,7 +212,8 @@ def funcionario_editar(request, funcionario_id):
 @login_required
 def funcionario_deletar(request, funcionario_id):
     funcionario = get_object_or_404(funcionarioModel, id=funcionario_id)
-    funcionario.delete()
+    funcionario.ativo = False
+    funcionario.save()
     return redirect('sistemaVendas:funcionario_home')
 
 
@@ -211,13 +221,15 @@ def funcionario_deletar(request, funcionario_id):
 def fornecedor_home(request):
     query = request.GET.get('q', '').strip()
 
+    fornecedores = FornecedorModel.objects.filter(ativo=True)
+    
     if query:
-        fornecedores = FornecedorModel.objects.filter(
+        fornecedores = fornecedores.filter(
             Q(razao_social__icontains=query) | 
             Q(nome_fantasia__icontains=query)
-        ).order_by('razao_social')
-    else:
-        fornecedores = FornecedorModel.objects.all().order_by('razao_social')
+        )
+    
+    fornecedores = fornecedores.order_by('razao_social')
     
     contexto = {
         'fornecedores': fornecedores,
@@ -259,13 +271,14 @@ def fornecedor_editar(request, fornecedor_id):
 @login_required
 def fornecedor_deletar(request, fornecedor_id):
     fornecedor = get_object_or_404(FornecedorModel, id=fornecedor_id)
-    fornecedor.delete()
+    fornecedor.ativo = False
+    fornecedor.save()
     return redirect('sistemaVendas:fornecedor_home')
 
 
 @login_required
 def produto_home(request):
-    produtos = ProdutoModel.objects.all().order_by('nome')
+    produtos = ProdutoModel.objects.filter(ativo=True).order_by('nome')
     categoria = request.GET.get('categoria')
     estoque_baixo = request.GET.get('estoque_baixo')
     
@@ -317,7 +330,8 @@ def produto_editar(request, produto_id):
 @login_required
 def produto_deletar(request, produto_id):
     produto = get_object_or_404(ProdutoModel, id=produto_id)
-    produto.delete()
+    produto.ativo = False
+    produto.save()
     return redirect('sistemaVendas:produto_home')
 
 
@@ -514,12 +528,10 @@ def relatorio_home(request):
     """
     View principal de relatórios com filtros e estatísticas
     """
-    # Obter parâmetros de filtro
     data_inicio = request.GET.get('data_inicio')
     data_fim = request.GET.get('data_fim')
     tipo_relatorio = request.GET.get('tipo', 'vendas')
     
-    # Definir período padrão (último mês)
     hoje = timezone.now()
     if not data_inicio:
         data_inicio = (hoje - timedelta(days=30)).strftime('%Y-%m-%d')
@@ -532,7 +544,6 @@ def relatorio_home(request):
         'tipo_relatorio': tipo_relatorio,
     }
     
-    # Converter strings de data para objetos datetime
     try:
         dt_inicio = timezone.datetime.strptime(data_inicio, '%Y-%m-%d')
         dt_fim = timezone.datetime.strptime(data_fim, '%Y-%m-%d')
@@ -541,47 +552,44 @@ def relatorio_home(request):
         messages.error(request, 'Formato de data inválido')
         return render(request, 'templaterelatorio/homeRelatorio.html', contexto)
     
-    # RELATÓRIO DE VENDAS
     if tipo_relatorio == 'vendas':
         vendas = VendaModel.objects.filter(
             data_venda__range=[dt_inicio, dt_fim]
         ).select_related('cliente', 'funcionario')
         
-        # Estatísticas gerais
         total_vendas = vendas.count()
         vendas_confirmadas = vendas.filter(status='CONFIRMADA')
         valor_total = vendas_confirmadas.aggregate(total=Sum('valor_total'))['total'] or Decimal('0')
         ticket_medio = valor_total / total_vendas if total_vendas > 0 else Decimal('0')
         
-        # Vendas por status
         vendas_por_status = vendas.values('status').annotate(
             quantidade=Count('id'),
             valor=Sum('valor_total')
         ).order_by('-quantidade')
         
-        # Vendas por forma de pagamento
         vendas_por_pagamento = vendas_confirmadas.values('forma_pagamento').annotate(
             quantidade=Count('id'),
             valor=Sum('valor_total')
         ).order_by('-valor')
         
-        # Top 5 clientes
-        top_clientes = vendas_confirmadas.values(
+        top_clientes = vendas_confirmadas.filter(
+            cliente__ativo=True
+        ).values(
             'cliente__nome'
         ).annotate(
             total_compras=Sum('valor_total'),
             quantidade=Count('id')
         ).order_by('-total_compras')[:5]
         
-        # Top 5 vendedores
-        top_vendedores = vendas_confirmadas.values(
+        top_vendedores = vendas_confirmadas.filter(
+            funcionario__ativo=True
+        ).values(
             'funcionario__nome'
         ).annotate(
             total_vendas=Sum('valor_total'),
             quantidade=Count('id')
         ).order_by('-total_vendas')[:5]
         
-        # Vendas por dia (para gráfico)
         vendas_por_dia = vendas_confirmadas.extra(
             select={'dia': 'DATE(data_venda)'}
         ).values('dia').annotate(
@@ -590,7 +598,7 @@ def relatorio_home(request):
         ).order_by('dia')
         
         contexto.update({
-            'vendas': vendas[:20],  # Últimas 20 vendas
+            'vendas': vendas[:20],
             'total_vendas': total_vendas,
             'valor_total': valor_total,
             'ticket_medio': ticket_medio,
@@ -601,27 +609,24 @@ def relatorio_home(request):
             'vendas_por_dia': list(vendas_por_dia),
         })
     
-    # RELATÓRIO DE PRODUTOS
     elif tipo_relatorio == 'produtos':
-        produtos = ProdutoModel.objects.all()
+        produtos = ProdutoModel.objects.filter(ativo=True)
         
-        # Estatísticas de produtos
         total_produtos = produtos.count()
         produtos_ativos = produtos.filter(ativo=True).count()
-        produtos_inativos = produtos.filter(ativo=False).count()
+        produtos_inativos = ProdutoModel.objects.filter(ativo=False).count()
         produtos_estoque_baixo = produtos.filter(
             estoque_atual__lte=F('estoque_minimo')
         ).count()
         
-        # Valor total em estoque
         valor_estoque = produtos.aggregate(
             total=Sum(F('estoque_atual') * F('preco_custo'))
         )['total'] or Decimal('0')
         
-        # Produtos mais vendidos no período
         itens_vendidos = ItemVendaModel.objects.filter(
             venda__data_venda__range=[dt_inicio, dt_fim],
-            venda__status='CONFIRMADA'
+            venda__status='CONFIRMADA',
+            produto__ativo=True
         ).values(
             'produto__nome',
             'produto__codigo'
@@ -630,13 +635,11 @@ def relatorio_home(request):
             valor_total=Sum(F('quantidade') * F('preco_unitario'))
         ).order_by('-quantidade_vendida')[:10]
         
-        # Produtos por categoria
         produtos_por_categoria = produtos.values('categoria').annotate(
             quantidade=Count('id'),
             estoque_total=Sum('estoque_atual')
         ).order_by('-quantidade')
         
-        # Produtos com estoque baixo
         produtos_alerta = produtos.filter(
             estoque_atual__lte=F('estoque_minimo'),
             ativo=True
@@ -653,30 +656,25 @@ def relatorio_home(request):
             'produtos_alerta': produtos_alerta,
         })
     
-    # RELATÓRIO DE CLIENTES
     elif tipo_relatorio == 'clientes':
-        clientes = ClienteModel.objects.all()
+        clientes = ClienteModel.objects.filter(ativo=True)
         
-        # Estatísticas de clientes
         total_clientes = clientes.count()
         
-        # Clientes com compras no período
         clientes_compraram = VendaModel.objects.filter(
             data_venda__range=[dt_inicio, dt_fim],
-            status='CONFIRMADA'
+            status='CONFIRMADA',
+            cliente__ativo=True
         ).values('cliente').distinct().count()
         
-        # Clientes por cidade
         clientes_por_cidade = clientes.values('cidade').annotate(
             quantidade=Count('id')
         ).order_by('-quantidade')[:10]
         
-        # Clientes por UF
         clientes_por_uf = clientes.values('uf').annotate(
             quantidade=Count('id')
         ).order_by('-quantidade')
         
-        # Novos clientes no período
         novos_clientes = clientes.filter(
             id__in=VendaModel.objects.filter(
                 data_venda__range=[dt_inicio, dt_fim]
